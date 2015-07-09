@@ -1,23 +1,26 @@
 plugindir=$(libdir)/x86_64-linux-gnu/gstreamer-1.0
-plugin_LTLIBRARIES=libgstyoutube.la
+plugin_LTLIBRARIES=libgst-videosrc.la
 
-libgstyoutube_la_VALASOURCES = YoutubeSrc.vala Uri.vala Youtube.vala Utils.vala
-libgstyoutube_la_CFLAGS = $(PLUGINS_CFLAGS)
-libgstyoutube_la_LIBADD = $(PLUGINS_LIBS)
-libgstyoutube_la_LDFLAGS = -export-dynamic \
+libgst_videosrc_la_VALASOURCES = Utils.vala Video.vala VideoSrc.vala \
+	Uptobox.vala UptoboxSrc.vala \
+	YoutubeSrc.vala Uri.vala Youtube.vala
+	
+libgst_videosrc_la_CFLAGS = $(PLUGINS_CFLAGS)
+libgst_videosrc_la_LIBADD = $(PLUGINS_LIBS)
+libgst_videosrc_la_LDFLAGS = -export-dynamic \
 	-no-undefined \
 	-avoid-version \
 	-module
-libgstyoutube_la_LIBTOOLFLAGS = --tag=disable-static
+libgst_videosrc_la_LIBTOOLFLAGS = --tag=disable-static
 
-TMPSOURCES = $(libgstyoutube_la_VALASOURCES:.vala=.c)
+TMPSOURCES = $(libgst_videosrc_la_VALASOURCES:.vala=.c)
 
-libgstyoutube_la_SOURCES = $(TMPSOURCES) fix.c
+libgst_videosrc_la_SOURCES = $(TMPSOURCES) fix.c
 
-YoutubeSrc.c: plugin.stamp
+$(TMPSOURCES): plugin.stamp
 
-plugin.stamp: $(libgstyoutube_la_VALASOURCES)
-	valac --enable-experimental --vapidir=$(srcdir)/vapis --pkg gstreamer-base-1.0 --pkg gxml-0.6 -C $(libgstyoutube_la_VALASOURCES) -H youtubesrc.h
+plugin.stamp: $(libgst_videosrc_la_VALASOURCES)
+	valac --enable-experimental --vapidir=$(srcdir)/vapis --pkg gstreamer-base-1.0 --pkg gxml-0.6 -C $(libgst_videosrc_la_VALASOURCES) -H videosrc.h
 
 CLEANFILES = $(TMPSOURCES) *.h *.stamp
 DISTCLEANFILES = $(CLEANFILES) *.in

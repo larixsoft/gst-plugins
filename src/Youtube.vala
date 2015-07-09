@@ -1,23 +1,4 @@
 namespace Video {
-	public enum Quality {
-		NONE,
-		LOW,
-		STANDARD,
-		HIGH,
-		HD,
-		HD2
-	}
-	
-	public errordomain VideoError {
-		NULL,
-		INVALID,
-		NOT_FOUND
-	}
-	
-	public struct Item {
-		public string url;
-		public Quality quality;
-	}
 	public class Youtube : GLib.Object {
 		public Youtube (string uri) throws GLib.Error {
 			notify["quality"].connect (() => {

@@ -1,29 +1,29 @@
-public class YoutubeSrc : VideoSrc {
+public class UptoboxSrc : VideoSrc {
 	class construct {
-		set_static_metadata ("YoutubeSrc", "Video", "Youtube source element", "Yannick Inizan <inizan.yannick@gmail.com>");
+		set_static_metadata ("UtpboxSrc", "Video", "Uptobox source element", "Yannick Inizan <inizan.yannick@gmail.com>");
 	}
 	
-	Video.Youtube youtube;
+	Video.Uptobox uptobox;
 	
 	construct {
 		notify["location"].connect (() => {
 			try {
 				if (location != null) {
-					youtube = new Video.Youtube (location);
+					uptobox = new Video.Uptobox (location);
 				}
 			} catch {
 			
 			}
 		});
 		notify["quality"].connect (() => {
-			if (youtube != null)
-				youtube.quality = quality;
+			if (uptobox != null)
+				uptobox.quality = quality;
 		});
 	}
 	
 	public override bool start() {
-		if (youtube != null)
-			giosrc["location"] = youtube.uri;
+		if (uptobox != null)
+			giosrc["location"] = uptobox.uri;
 		return base.start();
 	}
 	
@@ -35,7 +35,7 @@ public class YoutubeSrc : VideoSrc {
 	
 	public bool set_uri (string uri) throws GLib.Error {
 		try {
-			var yt = new Video.Youtube (uri);
+			var yt = new Video.Uptobox (uri);
 			location = uri;
 			return true;
 		} catch {
@@ -45,7 +45,7 @@ public class YoutubeSrc : VideoSrc {
 	
 	[CCode (array_length = false, array_null_terminated = true)]
 	public static string[]? get_protocols (GLib.Type gtype) {
-		return new string[]{"http", "https", "youtube"};
+		return new string[]{"http", "https"};
 	}
 	
 	public static Gst.URIType get_type_uri (GLib.Type gtype) {
