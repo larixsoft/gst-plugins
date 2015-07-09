@@ -10,12 +10,14 @@ libgstyoutube_la_LDFLAGS = -export-dynamic \
 	-module
 libgstyoutube_la_LIBTOOLFLAGS = --tag=disable-static
 
-libgstyoutube_la_SOURCES = $(libgstyoutube_la_VALASOURCES:.vala=.c) fix.c
+TMPSOURCES = $(libgstyoutube_la_VALASOURCES:.vala=.c)
+
+libgstyoutube_la_SOURCES = $(TMPSOURCES) fix.c
 
 YoutubeSrc.c: plugin.stamp
 
 plugin.stamp: $(libgstyoutube_la_VALASOURCES)
 	valac --enable-experimental --vapidir=$(srcdir)/vapis --pkg gstreamer-base-1.0 --pkg gxml-0.6 -C $(libgstyoutube_la_VALASOURCES) -H youtubesrc.h
 
-CLEANFILES = *.c *.stamp
+CLEANFILES = $(TMPSOURCES) *.h *.stamp
 DISTCLEANFILES = $(CLEANFILES) *.in
