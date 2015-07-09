@@ -3,28 +3,15 @@ public class UptoboxSrc : VideoSrc {
 		set_static_metadata ("UtpboxSrc", "Video", "Uptobox source element", "Yannick Inizan <inizan.yannick@gmail.com>");
 	}
 	
-	Video.Uptobox uptobox;
-	
 	construct {
 		notify["location"].connect (() => {
 			try {
-				if (location != null) {
-					uptobox = new Video.Uptobox (location);
-				}
+				if (location != null)
+					video = new Video.Uptobox (location);
 			} catch {
 			
 			}
 		});
-		notify["quality"].connect (() => {
-			if (uptobox != null)
-				uptobox.quality = quality;
-		});
-	}
-	
-	public override bool start() {
-		if (uptobox != null)
-			giosrc["location"] = uptobox.uri;
-		return base.start();
 	}
 	
 	// URIHandler section

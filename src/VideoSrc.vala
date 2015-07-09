@@ -12,14 +12,25 @@ public class VideoSrc : Gst.Base.Src {
 		add_pad_template (src_factory.get());
 	}
 	
+	internal Video.WebVideo video;
 	internal Gst.Base.Src giosrc;
 	
 	construct {
 		giosrc = (Gst.Base.Src)Gst.ElementFactory.make ("giosrc", "handle");
+		notify["video"].connect (() => {
+			title = video.title;
+			picture = video.picture;
+		});
+		notify["quality"].connect (() => {
+			if (video != null)
+				video.quality = quality;
+		});
 	}
 	
 	public string location { get; set; }
 	public Video.Quality quality { get; set; default = Video.Quality.STANDARD; }
+	public string title { get; private set; }
+	public ByteArray picture { get; private set; }
 	
 	public override Gst.FlowReturn create (uint64 offset, uint size, out Gst.Buffer buffer) {
 		return giosrc.create (offset, size, out buffer);
@@ -34,6 +45,9 @@ public class VideoSrc : Gst.Base.Src {
 	}
 	
 	public override bool start() {
+		if (video == null)
+			return false;
+		giosrc["location"] = video.uri;
 		return giosrc.start();
 	}
 	

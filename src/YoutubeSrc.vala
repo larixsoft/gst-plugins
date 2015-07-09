@@ -3,28 +3,15 @@ public class YoutubeSrc : VideoSrc {
 		set_static_metadata ("YoutubeSrc", "Video", "Youtube source element", "Yannick Inizan <inizan.yannick@gmail.com>");
 	}
 	
-	Video.Youtube youtube;
-	
 	construct {
 		notify["location"].connect (() => {
 			try {
-				if (location != null) {
-					youtube = new Video.Youtube (location);
-				}
+				if (location != null)
+					video = new Video.Youtube (location);
 			} catch {
 			
 			}
 		});
-		notify["quality"].connect (() => {
-			if (youtube != null)
-				youtube.quality = quality;
-		});
-	}
-	
-	public override bool start() {
-		if (youtube != null)
-			giosrc["location"] = youtube.uri;
-		return base.start();
 	}
 	
 	// URIHandler section

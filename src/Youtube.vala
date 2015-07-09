@@ -1,16 +1,6 @@
 namespace Video {
-	public class Youtube : GLib.Object {
+	public class Youtube : WebVideo {
 		public Youtube (string uri) throws GLib.Error {
-			notify["quality"].connect (() => {
-				for (var i = (int)quality; i >= 0; i--) {
-					foreach (var item in urls)
-						if ((int)item.quality == i) {
-							this.uri = item.url;
-							return;
-						}
-				}
-			});
-			urls = new Gee.ArrayList<Item?>();
 			var url = new MeeGst.Uri (uri);
 			if ("youtu.be" in uri)
 				url = new MeeGst.Uri ("http://www.youtube.com/watch?v=" + uri.split ("/")[uri.split ("/").length - 1]);
@@ -19,6 +9,9 @@ namespace Video {
 			var video_id = url.parameters["v"];
 			uint8[] data;
 			var document = new HtmlDocument.from_uri ("http://www.youtube.com/watch?v=" + video_id, HtmlDocument.default_options);
+			title = (document.get_elements_by_tag_name ("title")[0] as GXml.xElement).content;
+			File.new_for_uri ("https://i.ytimg.com/vi/" + video_id + "/mqdefault.jpg").load_contents (null, out data, null);
+			picture = new ByteArray.take (data);
 			File.new_for_uri ("http://www.youtube.com/watch?v=" + url.parameters["v"]).load_contents (null, out data, null);
 			var table = ((string)data).split("\"");
 			string? _map = null;
@@ -132,9 +125,5 @@ namespace Video {
 				}
 			return sig;
 		}
-	
-		internal Gee.ArrayList<Item?> urls { get; private set; }
-		public Quality quality { get; set; }
-		public string uri { get; private set; }
 	}
 }
