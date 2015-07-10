@@ -1,26 +1,27 @@
 plugindir=$(libdir)/x86_64-linux-gnu/gstreamer-1.0
-plugin_LTLIBRARIES=libgst-videosrc.la
+plugin_LTLIBRARIES=libgst-webvideo.la
 
-libgst_videosrc_la_VALASOURCES = Utils.vala Video.vala VideoSrc.vala \
-	Uptobox.vala UptoboxSrc.vala \
-	YoutubeSrc.vala Uri.vala Youtube.vala
-	
-libgst_videosrc_la_CFLAGS = $(PLUGINS_CFLAGS)
-libgst_videosrc_la_LIBADD = $(PLUGINS_LIBS)
-libgst_videosrc_la_LDFLAGS = -export-dynamic \
+libgst_webvideo_la_VALASOURCES = WebVideoSrc.vala Uri.vala Utils.vala Video.vala \
+	Youtube.vala Dailymotion.vala
+
+libgst_webvideo_la_CFLAGS = $(PLUGINS_CFLAGS)
+libgst_webvideo_la_LIBADD = $(PLUGINS_LIBS)
+libgst_webvideo_la_LDFLAGS = -export-dynamic \
 	-no-undefined \
 	-avoid-version \
 	-module
-libgst_videosrc_la_LIBTOOLFLAGS = --tag=disable-static
+libgst_webvideo_la_LIBTOOLFLAGS = --tag=disable-static
 
-TMPSOURCES = $(libgst_videosrc_la_VALASOURCES:.vala=.c)
+TMPSOURCES = $(libgst_webvideo_la_VALASOURCES:.vala=.c)
 
-libgst_videosrc_la_SOURCES = $(TMPSOURCES) fix.c
+libgst_webvideo_la_SOURCES = $(TMPSOURCES) \
+	gio/gstgio.c gio/gstgiobasesrc.c gio/gstgiosrc.c \
+	fix.c
 
 $(TMPSOURCES): plugin.stamp
 
-plugin.stamp: $(libgst_videosrc_la_VALASOURCES)
-	valac --enable-experimental --vapidir=$(srcdir)/vapis --pkg gstreamer-base-1.0 --pkg gxml-0.6 -C $(libgst_videosrc_la_VALASOURCES) -H videosrc.h
+plugin.stamp: $(libgst_webvideo_la_VALASOURCES)
+	valac --enable-experimental --vapidir=$(srcdir)/vapis --pkg gstgio --pkg mee-json-1.0 --pkg gxml-0.6 -C $(libgst_webvideo_la_VALASOURCES) -H webvideosrc.h
 
 CLEANFILES = $(TMPSOURCES) *.h *.stamp
 DISTCLEANFILES = $(CLEANFILES) *.in
