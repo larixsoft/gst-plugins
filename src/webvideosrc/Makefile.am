@@ -1,4 +1,4 @@
-plugindir=$(libdir)/x86_64-linux-gnu/gstreamer-1.0
+plugindir=$(libdir)/gstreamer-1.0
 plugin_LTLIBRARIES=libgst-webvideo.la
 
 libgst_webvideo_la_VALASOURCES = ../utils/Uri.vala ../utils/Utils.vala \
@@ -19,7 +19,7 @@ libgst_webvideo_la_SOURCES = Uri.c Utils.c \
 Uri.c: plugin.stamp
 
 plugin.stamp: $(libgst_webvideo_la_VALASOURCES)
-	valac --enable-experimental --vapidir=$(srcdir)/../vapis --pkg gstgio --pkg mee-json-1.0 --pkg gxml-0.6 -C $(libgst_webvideo_la_VALASOURCES) -H webvideosrc.h
+	valac --enable-experimental --vapidir=$(srcdir)/../vapis --pkg gstreamer-base-1.0 --pkg mee-json-1.0 --pkg gxml-0.6 -C $(libgst_webvideo_la_VALASOURCES) -H webvideosrc.h
 
 CLEANFILES = Uri.c Utils.c WebVideoSrc.c Video.c Youtube.c Dailymotion.c *.h *.stamp
 DISTCLEANFILES = $(CLEANFILES) *.in

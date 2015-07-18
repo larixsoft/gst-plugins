@@ -3,6 +3,11 @@
 [CCode (cprefix = "Gst", gir_namespace = "Gst", gir_version = "1.0", lower_case_cprefix = "gst_")]
 [Experimental]
 namespace Gst {
+	[CCode (cheader_filename = "gst/gst.h", cname = "GST_LOG_OBJECT")]
+	public static void log_object (Gst.Object obj, ...);
+	[CCode (cheader_filename = "gst/gst.h", cname = "GST_ERROR_OBJECT")]
+	public static void error_object (Gst.Object obj, ...);
+	
 	namespace Debug {
 		[CCode (cheader_filename = "gst/gst.h", cname = "GST_DEBUG_BG_MASK")]
 		public const int BG_MASK;
@@ -39,6 +44,8 @@ namespace Gst {
 		public static void log_default (Gst.DebugCategory category, Gst.DebugLevel level, string file, string function, int line, GLib.Object? object, Gst.DebugMessage message, void* unused = null);
 		[CCode (cheader_filename = "gst/gst.h")]
 		public static void log_valist (Gst.DebugCategory category, Gst.DebugLevel level, string file, string function, int line, GLib.Object? object, string format, va_list args);
+		[CCode (cheader_filename = "gst/gst.h", cname = "GST_DEBUG_OBJECT")]
+		public static void object (Gst.Object obj, ...);
 		[CCode (cheader_filename = "gst/gst.h")]
 		public static void print_stack_trace ();
 		[CCode (cheader_filename = "gst/gst.h")]
@@ -1282,7 +1289,7 @@ namespace Gst {
 		public bool map (out Gst.MapInfo info, Gst.MapFlags flags);
 		public void resize (ssize_t offset, size_t size);
 		public Gst.Memory share (ssize_t offset, ssize_t size);
-		public void unmap (Gst.MapInfo info);
+		public void unmap (ref Gst.MapInfo info);
 		[CCode (has_construct_function = false)]
 		public Memory.wrapped (Gst.MemoryFlags flags, [CCode (array_length_cname = "size", array_length_pos = 4.33333, array_length_type = "gsize")] uint8[] data, size_t maxsize, size_t offset, [CCode (delegate_target_pos = 4.66667)] GLib.DestroyNotify? notify = null);
 	}

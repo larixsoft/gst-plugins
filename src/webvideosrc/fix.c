@@ -7,8 +7,7 @@
 #define PACKAGE "webvideosrc"
 #endif
 
-GstFlowReturn
-gst_gio_seek (gpointer element, GSeekable * stream, guint64 offset,
+GstFlowReturn gst_gio_seek (gpointer element, GSeekable * stream, guint64 offset,
     GCancellable * cancel)
 {
   gboolean success;
