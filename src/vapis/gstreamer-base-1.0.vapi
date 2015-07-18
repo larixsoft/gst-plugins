@@ -420,7 +420,7 @@ namespace Gst {
 			[NoWrapper]
 			public virtual Gst.FlowReturn alloc (Gst.Buffer buf);
 			[NoWrapper]
-			public virtual Gst.FlowReturn create (Gst.Buffer buf);
+			public virtual Gst.FlowReturn create (out Gst.Buffer buf);
 			[NoWrapper]
 			public virtual Gst.FlowReturn fill (Gst.Buffer buf);
 		}

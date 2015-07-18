@@ -590,6 +590,7 @@ namespace Gst {
 		public unowned Gst.Meta? add_meta (Gst.MetaInfo info, void* @params);
 		[CCode (has_construct_function = false)]
 		public Buffer.allocate (Gst.Allocator? allocator, size_t size, Gst.AllocationParams? @params);
+		public Buffer.and_alloc (size_t size);
 		public Gst.Buffer append (owned Gst.Buffer buf2);
 		public void append_memory (owned Gst.Memory mem);
 		public Gst.Buffer append_region (owned Gst.Buffer buf2, ssize_t offset, ssize_t size);
@@ -626,6 +627,12 @@ namespace Gst {
 		public void remove_memory_range (uint idx, int length);
 		public bool remove_meta (Gst.Meta meta);
 		public void replace_all_memory (owned Gst.Memory mem);
+		public void replace_data (uint8[] data) {
+			Gst.MapInfo map_info;
+			map (out map_info, Gst.MapFlags.WRITE);
+			map_info.data = data;
+			unmap (map_info);
+		}
 		public void replace_memory (uint idx, owned Gst.Memory mem);
 		public void replace_memory_range (uint idx, int length, owned Gst.Memory mem);
 		public void resize (ssize_t offset, ssize_t size);

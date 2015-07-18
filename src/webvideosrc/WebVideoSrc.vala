@@ -1,23 +1,38 @@
 using Video;
 
 public static extern Type web_video_src_real_type();
+public static extern Gst.FlowReturn web_video_src_rcreate (WebVideoSrc src, uint64 offset, uint size, out Gst.Buffer buffer);
 
-public class WebVideoSrc : Gst.GioBaseSrc {
+public class WebVideoSrc : Gst.Base.Src {
 	
 	public static bool init (Gst.Plugin plugin) {
 		return Gst.Element.register (plugin, "webvideosrc", 1024, web_video_src_real_type());
 	}
 	
 	class construct {
+		Gst.StaticCaps caps = { null, "ANY" };
+		Gst.StaticPadTemplate src_template = {
+			"src",
+			Gst.PadDirection.SRC,
+			Gst.PadPresence.ALWAYS,
+			caps
+		};
+		add_pad_template (src_template.get());
 		set_static_metadata ("WebVideoSrc", "Video", "Web video source element", "Yannick Inizan <inizan.yannick@gmail.com>");
 	}
 	
 	WebVideo video;
+	public FileInputStream stream;
+	public Cancellable cancel;
+	public Gst.Buffer cache;
+	public uint64 position;
 	
 	construct {
+		cancel = new Cancellable();
 		notify["location"].connect (() => {
 			try {
 				video = WebVideo.guess (location);
+				video.quality = quality;
 				if (video is Youtube)
 					provider = "youtube";
 				if (video is Dailymotion)
@@ -45,18 +60,41 @@ public class WebVideoSrc : Gst.GioBaseSrc {
 	public string provider { get; private set; }
 	public Quality quality { get; set; default = Quality.STANDARD; }
 	
-	public override InputStream get_stream() {
-		if (location == null || video == null)
-			return null;
-		var file = File.new_for_uri (video.uri);
-		return file.read (cancel);
-	}
-	
 	public signal void started();
 	
 	public override bool start() {
+		position = 0;
+		stream = File.new_for_uri (video.uri).read();
 		started();
-		return base.start();
+		return true;
+	}
+	
+	public override bool stop() {
+		stream.close();
+		return true;
+	}
+	
+	public override bool get_size (out uint64 size) {
+		size = (uint64)stream.query_info ("standard::*").get_size();
+		return true;
+	}
+	
+	public override bool is_seekable() {
+		return true;
+	}
+	
+	public override bool unlock() {
+		cancel.cancel();
+		return true;
+	}
+	
+	public override bool unlock_stop() {
+		cancel.reset();
+		return true;
+	}
+	
+	public override Gst.FlowReturn create (uint64 offset, uint size, out Gst.Buffer buffer) {
+		return web_video_src_rcreate (this, offset, size, out buffer);
 	}
 	
 	// URIHandler section
