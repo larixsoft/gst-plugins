@@ -2319,8 +2319,7 @@ namespace Gst {
 	public struct TypeFind {
 		public void* data;
 		public static GLib.Type get_type ();
-		[CCode (array_length_pos = 1.1, array_length_type = "guint")]
-		public unowned uint8[]? peek (int64 offset);
+		public unowned uint8* peek (int64 offset, uint size);
 		public static bool register (Gst.Plugin? plugin, string name, uint rank, [CCode (delegate_target_pos = 6.1, destroy_notify_pos = 6.2)] owned Gst.TypeFindFunction func, string? extensions, Gst.Caps possible_caps);
 		public void suggest (uint probability, Gst.Caps caps);
 		public void suggest_simple (uint probability, string media_type, string? fieldname, ...);

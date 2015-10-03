@@ -1,12 +1,7 @@
 namespace Video {
 	public class Youtube : WebVideo {
-		public Youtube (string uri) throws GLib.Error {
+		public Youtube (MeeGst.Uri url) {
 			base();
-			var url = new MeeGst.Uri (uri);
-			if ("youtu.be" in uri)
-				url = new MeeGst.Uri ("http://www.youtube.com/watch?v=" + uri.split ("/")[uri.split ("/").length - 1]);
-			if (url.parameters["v"] == null)
-				throw new VideoError.NOT_FOUND ("video id not found");
 			var video_id = url.parameters["v"];
 			uint8[] data;
 			var document = new HtmlDocument.from_uri ("http://www.youtube.com/watch?v=" + video_id, HtmlDocument.default_options);
@@ -32,47 +27,51 @@ namespace Video {
 			if (_map == null) {
 				string ruri = @"https://www.youtube.com/get_video_info?sts=1588&asv=3&hl=en&gl=US&el=embedded&video_id=$video_id&eurl=https%3A%2F%2Fyoutube.googleapis.com%2Fv%2F$video_id";
 				File.new_for_uri (ruri).load_contents (null, out data, null);
-				url = new MeeGst.Uri ("http://www.dummy.com?" + (string)data);
-				if (url.parameters["url_encoded_fmt_stream_map"] != null)
-					_map = GLib.Uri.unescape_string (url.parameters["url_encoded_fmt_stream_map"]);
+				var durl = new MeeGst.Uri ("http://www.dummy.com?" + (string)data);
+				if (durl.parameters["url_encoded_fmt_stream_map"] != null)
+					_map = GLib.Uri.unescape_string (durl.parameters["url_encoded_fmt_stream_map"]);
 			}
-			if (_map == null)
-				throw new VideoError.NOT_FOUND ("youtube map not found.");
-			string[] map = _map.replace ("\\u0026", "&").split (",");
-			foreach (string s in map) {
-				string[] t = s.split ("&");
-				string _quality = "";
-				string u = "";
-				string? signature = null;
-				foreach (var val in t) {
-					var t1 = val.split ("=")[0];
-					var t2 = val.split ("=")[1];
-					if (t1 == "sig")
-						signature = "&signature=" + t2;
-					if (t1 == "s") {
-						if (js_url == null)
-							return;
-						signature = "&signature=" + descramble (t2, js_url);
+			if (_map != null) {
+				string[] map = _map.replace ("\\u0026", "&").split (",");
+				foreach (string s in map) {
+					string[] t = s.split ("&");
+					string _quality = "";
+					string u = "";
+					string? signature = null;
+					foreach (var val in t) {
+						var t1 = val.split ("=")[0];
+						var t2 = val.split ("=")[1];
+						if (t1 == "sig")
+							signature = "&signature=" + t2;
+						if (t1 == "s") {
+							if (js_url == null)
+								return;
+							try {
+								signature = "&signature=" + descramble (t2, js_url);
+							} catch {
+								continue;
+							}
+						}
+						if (t1 == "quality")
+							_quality = t2;
+						if (t1 == "url")
+							u = GLib.Uri.unescape_string (t2);
 					}
-					if (t1 == "quality")
-						_quality = t2;
-					if (t1 == "url")
-						u = GLib.Uri.unescape_string (t2);
+					Quality q = Quality.NONE;
+					if(_quality == "hd1080")
+						q = Quality.HD2;
+					else if(_quality == "hd720")
+						q = Quality.HD;
+					else if(_quality == "large")
+						q = Quality.HIGH;
+					else if(_quality == "medium")
+						q = Quality.STANDARD;
+					else if(_quality == "small")
+						q = Quality.LOW;
+					urls.add ({ u + signature, q });
 				}
-				Quality q = Quality.NONE;
-				if(_quality == "hd1080")
-					q = Quality.HD2;
-				else if(_quality == "hd720")
-					q = Quality.HD;
-				else if(_quality == "large")
-					q = Quality.HIGH;
-				else if(_quality == "medium")
-					q = Quality.STANDARD;
-				else if(_quality == "small")
-					q = Quality.LOW;
-				urls.add ({ u + signature, q });
+				quality = Quality.STANDARD;
 			}
-			quality = Quality.STANDARD;
 		}
 		
 		string descramble (string signature, string js_url) throws GLib.Error {

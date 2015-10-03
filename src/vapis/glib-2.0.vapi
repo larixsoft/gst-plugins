@@ -2141,6 +2141,9 @@ namespace GLib {
 		public Quark domain;
 		public int code;
 		public string message;
+		
+		[CCode (cname = "g_set_error")]
+		public static void set (ref Error e, Quark domain, int code, string format, ...);
 	}
 
 	/* Message Output and Debugging Functions */

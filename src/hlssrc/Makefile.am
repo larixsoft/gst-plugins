@@ -13,7 +13,7 @@ libgst_hlssrc_la_LDFLAGS = -export-dynamic \
 libgst_hlssrc_la_LIBTOOLFLAGS = --tag=disable-static
 
 libgst_hlssrc_la_SOURCES = Uri.c Utils.c \
-	HlsSrc.c \
+	HlsSrc.c M3U8.c \
 	fix.c
 
 $(libgst_hlssrc_la_SOURCES): plugin.stamp
@@ -21,5 +21,5 @@ $(libgst_hlssrc_la_SOURCES): plugin.stamp
 plugin.stamp: $(libgst_hlssrc_la_VALASOURCES)
 	valac --enable-experimental --vapidir=$(srcdir)/../vapis --pkg libsoup-2.4 --pkg gstreamer-base-1.0 --pkg gxml-0.6 -C $(libgst_hlssrc_la_VALASOURCES) -H hlssrc.h
 
-CLEANFILES = Uri.c Utils.c HlsSrc.c *.h *.stamp
+CLEANFILES = Uri.c Utils.c HlsSrc.c M3U8.c *.h *.stamp
 DISTCLEANFILES = $(CLEANFILES) *.in

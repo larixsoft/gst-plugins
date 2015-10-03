@@ -23,6 +23,22 @@ GstFlowReturn gst_gio_seek (gpointer element, GSeekable * stream, guint64 offset
   return GST_FLOW_ERROR;
 }
 
+gboolean web_video_src_set_uri (GstURIHandler * handler, const gchar * uri, GError ** error) {
+	GstElement *element = GST_ELEMENT (handler);
+	g_return_val_if_fail (GST_IS_ELEMENT (element), FALSE);
+	if (!video_web_video_uri_is_valid (uri)) {
+		g_set_error (error, GST_URI_ERROR, GST_URI_ERROR_BAD_URI, "URI not supported");
+		return FALSE;
+	}
+	if (GST_STATE (element) == GST_STATE_PLAYING || GST_STATE (element) == GST_STATE_PAUSED) {
+		g_set_error (error, GST_URI_ERROR, GST_URI_ERROR_BAD_STATE,
+			"Changing the 'location' property while the element is running is not supported");
+		return FALSE;
+	}
+	web_video_src_set_location ((WebVideoSrc*)handler, uri);
+	return TRUE;
+}
+
 GstFlowReturn web_video_src_rcreate (WebVideoSrc* src, guint64 offset, guint size, GstBuffer ** buf_return)
 {
   GstBuffer *buf;

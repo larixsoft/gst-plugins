@@ -19,7 +19,7 @@ libgst_webvideo_la_SOURCES = Uri.c Utils.c \
 Uri.c: plugin.stamp
 
 plugin.stamp: $(libgst_webvideo_la_VALASOURCES)
-	valac --enable-experimental --vapidir=$(srcdir)/../vapis --pkg gstreamer-base-1.0 --pkg mee-json-1.0 --pkg gxml-0.6 -C $(libgst_webvideo_la_VALASOURCES) -H webvideosrc.h
+	valac --enable-experimental --vapidir=$(srcdir)/../vapis --pkg gstreamer-base-1.0 --pkg json-glib-1.0 --pkg gxml-0.6 -C $(libgst_webvideo_la_VALASOURCES) -H webvideosrc.h
 
 CLEANFILES = Uri.c Utils.c WebVideoSrc.c Video.c Youtube.c Dailymotion.c *.h *.stamp
 DISTCLEANFILES = $(CLEANFILES) *.in

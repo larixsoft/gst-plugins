@@ -6,11 +6,18 @@ public static extern Gst.FlowReturn web_video_src_rcreate (WebVideoSrc src, uint
 public class WebVideoSrc : Gst.Base.Src {
 	
 	public static bool init (Gst.Plugin plugin) {
+		Gst.StaticCaps caps = { null, "text/html" };
+		if (!Gst.TypeFind.register (plugin, "text/html", Gst.Rank.PRIMARY, find => {
+			var data = (string)find.peek (0, 100);
+			if ("ytcfg" in data || "ytcsi" in data)
+				find.suggest (Gst.TypeFindProbability.MAXIMUM, caps.get());
+		}, "html,htm", caps.get()))
+			return false;
 		return Gst.Element.register (plugin, "webvideosrc", 1024, web_video_src_real_type());
 	}
 	
 	class construct {
-		Gst.StaticCaps caps = { null, "ANY" };
+		Gst.StaticCaps caps = { null, "text/html" };
 		Gst.StaticPadTemplate src_template = {
 			"src",
 			Gst.PadDirection.SRC,
@@ -30,24 +37,22 @@ public class WebVideoSrc : Gst.Base.Src {
 	construct {
 		cancel = new Cancellable();
 		notify["location"].connect (() => {
-			try {
-				video = WebVideo.guess (location);
-				video.quality = quality;
-				if (video is Youtube)
-					provider = "youtube";
-				if (video is Dailymotion)
-					provider = "dailymotion";
-				started.connect (() => {
-					var list = new Gst.TagList.empty();
-					list.add (Gst.TagMergeMode.APPEND, "title", video.title);
-					var sample = new Gst.Sample (new Gst.Buffer.wrapped (video.picture.data), null, null, null);
-					list.add (Gst.TagMergeMode.APPEND, "image", sample);
-					var msg = new Gst.Message.tag (this, list);
-					post_message (msg);
-				});
-			} catch {
-			
-			}
+			video = WebVideo.guess (location);
+			if (video == null)
+				return;
+			video.quality = quality;
+			if (video is Youtube)
+				provider = "youtube";
+			if (video is Dailymotion)
+				provider = "dailymotion";
+			started.connect (() => {
+				var list = new Gst.TagList.empty();
+				list.add (Gst.TagMergeMode.APPEND, "title", video.title);
+				var sample = new Gst.Sample (new Gst.Buffer.wrapped (video.picture.data), null, null, null);
+				list.add (Gst.TagMergeMode.APPEND, "image", sample);
+				var msg = new Gst.Message.tag (this, list);
+				post_message (msg);
+			});
 		});
 		notify["quality"].connect (() => {
 			if (video != null) {
@@ -103,16 +108,20 @@ public class WebVideoSrc : Gst.Base.Src {
 		return location;
 	}
 	
+	/*
 	public bool set_uri (string uri) throws GLib.Error {
-		if (WebVideo.guess (uri) == null)
+		if (!WebVideo.uri_is_valid (uri))
 			return false;
+		if (WebVideo.guess (uri) == null)
+			throw new Gst.URIError.BAD_URI ("invalid URI");
 		location = uri;
 		return true;
 	}
+	*/
 	
 	[CCode (array_length = false, array_null_terminated = true)]
 	public static string[]? get_protocols (GLib.Type gtype) {
-		return new string[]{"http", "https"};
+		return new string[]{"http", "https", "youtube", "dailymotion"};
 	}
 	
 	public static Gst.URIType get_type_uri (GLib.Type gtype) {

@@ -32,7 +32,6 @@ internal class HtmlDocument : GXml.xDocument {
 		}
 		
 		public HtmlDocument.from_string (string html, int options = 0) {
-			FileUtils.set_contents ("/home/yannick/Documents/toto", html);
 			base.from_libxml2 (Html.Doc.read_memory (html.to_utf8(), html.length, "", null, options));
 		}
 		
@@ -40,8 +39,26 @@ internal class HtmlDocument : GXml.xDocument {
 			this.from_file (File.new_for_uri (uri), options);
 		}
 		
+		Gee.List<GXml.Node> gebcn (GXml.xElement node, string klass) {
+			var list = new Gee.ArrayList<GXml.Node>();
+			foreach (var child in node.childs) {
+				var e = child as GXml.xElement;
+				if (e == null)
+					continue;
+				list.add_all (gebcn (e, klass));
+				if (e.get_attribute ("class") != null) {
+					foreach (string kls in e.get_attribute ("class").split (" "))
+						if (kls == klass) {
+							list.add (child);
+							break;
+						}
+				}
+			}
+			return list;
+		}
+		
 		public Gee.List<GXml.Node> get_elements_by_class_name (string klass) {
-			return root.get_elements_by_class_name (klass);
+			return gebcn (root as GXml.xElement, klass);
 		}
 		
 		public GXml.Node? get_element_by_id (string id) {

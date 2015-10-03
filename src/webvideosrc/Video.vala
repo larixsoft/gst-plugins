@@ -39,16 +39,24 @@ namespace Video {
 		public string title { get; protected set; }
 		public string uri { get; private set; }
 		
+		public static bool uri_is_valid (string uri) {
+			return ("youtube.com" in uri || "youtu.be" in uri || "dailymotion" in uri);
+		}
+		
 		public static WebVideo? guess (string uri) {
-			try {
-				return new Youtube (uri);
-			} catch {
-				try {
-					return new Dailymotion (uri);
-				} catch {
+			var url = new MeeGst.Uri (uri);
+			if (uri.has_prefix ("youtube://"))
+				url = new MeeGst.Uri ("http://www.youtube.com/watch?v=" + uri.split ("youtube://")[1]);
+			else if ("youtu.be" in uri)
+				url = new MeeGst.Uri ("http://www.youtube.com/watch?v=" + uri.split ("/")[uri.split ("/").length - 1]);
+			if ("youtube.com" in uri || "youtu.be" in uri || uri.has_prefix ("youtube://"))
+				if (url.parameters["v"] == null)
 					return null;
-				}
-			}
+				else
+					return new Youtube (url);
+			if ("dailymotion" in uri)
+				return new Dailymotion (uri);
+			return null;
 		}
 	}
 }
