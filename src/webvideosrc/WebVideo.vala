@@ -40,10 +40,14 @@ namespace Video {
 		public string uri { get; private set; }
 		
 		public static bool uri_is_valid (string uri) {
-			return ("youtube.com" in uri || "youtu.be" in uri || "dailymotion" in uri);
+			return ("://uptobox.com" in uri || "://uptostream.com" in uri ||
+				"youtube.com" in uri || "youtu.be" in uri || 
+				"dailymotion" in uri);
 		}
 		
 		public static WebVideo? guess (string uri) {
+			if ("://uptobox.com" in uri || "://uptostream.com" in uri)
+				return new Uptobox (uri);
 			var url = new MeeGst.Uri (uri);
 			if (uri.has_prefix ("youtube://"))
 				url = new MeeGst.Uri ("http://www.youtube.com/watch?v=" + uri.split ("youtube://")[1]);

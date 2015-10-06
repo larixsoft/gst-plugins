@@ -45,6 +45,8 @@ public class WebVideoSrc : Gst.Base.Src {
 				provider = "youtube";
 			if (video is Dailymotion)
 				provider = "dailymotion";
+			if (video is Uptobox)
+				provider = "uptobox";
 			started.connect (() => {
 				var list = new Gst.TagList.empty();
 				list.add (Gst.TagMergeMode.APPEND, "title", video.title);

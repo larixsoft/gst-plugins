@@ -535,6 +535,18 @@ namespace GXml {
 			return list;
 		}
 		
+		public Gee.List<GXml.Node> get_elements_by_tag_name (string tag_name) {
+			var list = new Gee.ArrayList<GXml.Node>();
+			if (childs == null || childs.size == 0)
+				return list;
+			foreach (var child in childs) {
+				list.add_all (child.get_elements_by_tag_name (tag_name));
+				if (child.name == tag_name)
+					list.add (child);
+			}
+			return list;
+		}
+		
 		public GXml.Node? get_element_by_id (string id) {
 			foreach (var child in childs) {
 				if (child.get_element_by_id (id) != null)
