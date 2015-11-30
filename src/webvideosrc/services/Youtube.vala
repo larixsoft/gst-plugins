@@ -4,7 +4,7 @@ namespace Video {
 			base();
 			var video_id = url.parameters["v"];
 			uint8[] data;
-			var document = new HtmlDocument.from_uri ("http://www.youtube.com/watch?v=" + video_id, HtmlDocument.default_options);
+			var document = new GXml.HtmlDocument.from_uri ("http://www.youtube.com/watch?v=" + video_id, GXml.HtmlDocument.default_options);
 			foreach (var meta in document.get_elements_by_tag_name ("meta")) {
 				var e = meta as GXml.xElement;
 				if (e.get_attribute ("property") == "og:title")
@@ -14,25 +14,12 @@ namespace Video {
 					picture = new ByteArray.take (data);
 				}
 			}
-			File.new_for_uri ("http://www.youtube.com/watch?v=" + url.parameters["v"]).load_contents (null, out data, null);
-			var table = ((string)data).split("\"");
-			string? _map = null;
-			string? js_url = null;
-			for (var i = 0; i < table.length; i++) {
-				if (table[i] == "url_encoded_fmt_stream_map")
-					_map = table[i+2];
-				if (table[i] == "js")
-					js_url = "http:" + table[i+2].replace ("\\/", "/");
-			}
-			if (_map == null) {
-				string ruri = @"https://www.youtube.com/get_video_info?sts=1588&asv=3&hl=en&gl=US&el=embedded&video_id=$video_id&eurl=https%3A%2F%2Fyoutube.googleapis.com%2Fv%2F$video_id";
-				File.new_for_uri (ruri).load_contents (null, out data, null);
-				var durl = new MeeGst.Uri ("http://www.dummy.com?" + (string)data);
-				if (durl.parameters["url_encoded_fmt_stream_map"] != null)
-					_map = GLib.Uri.unescape_string (durl.parameters["url_encoded_fmt_stream_map"]);
-			}
+			File.new_for_uri ("https://www.youtube.com/get_video_info?sts=1588&asv=3&hl=en&gl=US&el=detailpage&video_id=" + video_id + "&eurl=https%3A%2F%2Fyoutube.googleapis.com%2Fv%2F" + video_id).load_contents (null, out data, null);
+			string _map = ((string)data).split ("url_encoded_fmt_stream_map=")[1].split ("&")[0];
+			_map =  GLib.Uri.unescape_string (_map);
 			if (_map != null) {
-				string[] map = _map.replace ("\\u0026", "&").split (",");
+				Decryptor dec = new Decryptor();
+				string[] map = _map.split (",");
 				foreach (string s in map) {
 					string[] t = s.split ("&");
 					string _quality = "";
@@ -44,13 +31,7 @@ namespace Video {
 						if (t1 == "sig")
 							signature = "&signature=" + t2;
 						if (t1 == "s") {
-							if (js_url == null)
-								return;
-							try {
-								signature = "&signature=" + descramble (t2, js_url);
-							} catch {
-								continue;
-							}
+							signature = "&signature=" + dec.decrypt (t2);
 						}
 						if (t1 == "quality")
 							_quality = t2;
@@ -73,64 +54,5 @@ namespace Video {
 				quality = Quality.STANDARD;
 			}
 		}
-		
-		string descramble (string signature, string js_url) throws GLib.Error {
-			string sig = signature;
-			var stream = new DataInputStream (File.new_for_uri (js_url).read());
-			string? descrambler = null;
-			Gee.ArrayList<string> lines = new Gee.ArrayList<string>();
-			while (descrambler == null) {
-				string? line = stream.read_line();
-				if (line == null)
-					error ("can't read line.");
-				lines.add (line);
-				// Youtube change signature function symbol.
-				if (!(".sig||" in line))
-					continue;
-				descrambler = line.substring (line.index_of (".sig||", line.index_of (".sig||") + 1) + ".sig||".length);
-				descrambler = descrambler.substring (0, descrambler.index_of ("("));
-			}
-			string? trans = null;
-			string? fn = null;
-			for (var i = 0; i < lines.size; i++)
-				if ("function %s(".printf (descrambler) in lines[i]) {
-					trans = lines[i].split ("function %s(".printf (descrambler))[0];
-					trans = trans.substring (trans.last_index_of ("={") + 2);
-					var map = new Gee.HashMap<string,string>();
-					foreach (var s in trans.split ("},")) {
-						var t = s.split(":function");
-						if (".splice" in t[1])
-							map[t[0]] = "splice";
-						if (".reverse" in t[1])
-							map[t[0]] = "reverse";
-						if ("var c=" in t[1])
-							map[t[0]] = "swap";
-					}
-					fn = "function %s(".printf (descrambler) + lines[i].split ("function %s(".printf (descrambler))[1].split (";function")[0];
-					var fns = fn.split (");");
-					for (var j = 1; j < fns.length - 1; j++) {
-						int k = int.parse (fns[j].substring (fns[j].last_index_of (",") + 1));
-						string meth = fns[j].substring (fns[j].index_of (".") + 1);
-						meth = meth.substring (0, meth.index_of ("("));
-						if (map[meth] == "reverse")
-							sig = sig.reverse();
-						if (map[meth] == "swap") {
-							uint8[] data = sig.data;
-							uint8 u = data[0];
-							data[0] = data[k % data.length];
-							data[k] = u;
-							sig = (string)data;
-						}
-						if (map[meth] == "splice") {
-							uint8[] array = sig.data;
-							int len = array.length;
-							array.move (k, 0, len - k);
-							sig = (string)array;
-						}
-					}
-				}
-			return sig;
-		}
-	
 	}
 }

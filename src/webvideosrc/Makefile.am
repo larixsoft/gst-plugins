@@ -3,7 +3,7 @@ plugin_LTLIBRARIES=libgst-webvideo.la
 
 libgst_webvideo_la_VALASOURCES = ../utils/Uri.vala ../utils/Utils.vala \
 	WebVideoSrc.vala WebVideo.vala \
-	services/Youtube.vala \
+	services/Youtube.vala services/Decryptor.vala \
 	services/Dailymotion.vala \
 	services/Uptobox.vala
 
@@ -17,7 +17,7 @@ libgst_webvideo_la_LIBTOOLFLAGS = --tag=disable-static
 
 libgst_webvideo_la_TMPSOURCES = Uri.c Utils.c \
 	WebVideoSrc.c WebVideo.c \
-	services/Youtube.c \
+	services/Youtube.c services/Decryptor.c \
 	services/Dailymotion.c \
 	services/Uptobox.c
 

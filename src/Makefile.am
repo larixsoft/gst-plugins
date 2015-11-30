@@ -1,1 +1,1 @@
-SUBDIRS = webvideosrc hlssrc
+SUBDIRS = webvideosrc

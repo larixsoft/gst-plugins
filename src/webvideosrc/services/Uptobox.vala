@@ -2,9 +2,9 @@ namespace Video {
 	public class Uptobox : WebVideo {
 		public Uptobox (string uri) {
 			string url = uri.replace ("uptobox.com", "uptostream.com");
-			var document = new HtmlDocument.from_uri (url, HtmlDocument.default_options);
-			title = (document.get_element_by_id ("titleVid") as GXml.Element).content.strip();
-			var video = document.get_elements_by_tag_name ("video")[0];
+			var document = new GXml.HtmlDocument.from_uri (url, GXml.HtmlDocument.default_options);
+			title = document.get_element_by_id ("titleVid").content.strip();
+			var video = document.get_elements_by_tag_name ("video")[0] as GXml.xElement;
 			var img_url = video.attrs["poster"].value;
 			uint8[] data;
 			File.new_for_uri (img_url).load_contents (null, out data, null);

@@ -170,7 +170,6 @@ GstFlowReturn web_video_src_rcreate (WebVideoSrc* src, guint64 offset, guint siz
   return ret;
 }
 
-
 static void web_video_src_interface_init (gpointer g_iface, gpointer iface_data) {
 	GstURIHandlerInterface * iface = (GstURIHandlerInterface*)g_iface;
 	iface->get_uri = web_video_src_get_uri;

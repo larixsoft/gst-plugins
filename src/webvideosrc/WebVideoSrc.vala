@@ -1,6 +1,7 @@
 using Video;
 
 public static extern Type web_video_src_real_type();
+public static extern Type you_tube_mix_real_type();
 public static extern Gst.FlowReturn web_video_src_rcreate (WebVideoSrc src, uint64 offset, uint size, out Gst.Buffer buffer);
 
 public class WebVideoSrc : Gst.Base.Src {
@@ -13,7 +14,8 @@ public class WebVideoSrc : Gst.Base.Src {
 				find.suggest (Gst.TypeFindProbability.MAXIMUM, caps.get());
 		}, "html,htm", caps.get()))
 			return false;
-		return Gst.Element.register (plugin, "webvideosrc", 1024, web_video_src_real_type());
+		if (!Gst.Element.register (plugin, "webvideosrc", 1024, web_video_src_real_type()))
+			return false;
 	}
 	
 	class construct {
