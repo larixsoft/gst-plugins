@@ -1,15 +1,36 @@
 public class Decryptor : GLib.Object {
-	string cr;
-	string dr;
+	string js;
+	string decrypt_method;
 	
-	public Decryptor() {
-		dr = """var dr={m5:function(a,b){a.splice(0,b)}, N0:function(a,b){var c=a[0];a[0]=a[b%a.length];a[b]=c}, Pe:function(a){a.reverse()}};""";
-		cr = """var cr=function(a){a=a.split("");dr.N0(a,26);dr.m5(a,3);dr.Pe(a,0);dr.m5(a,3);dr.Pe(a,16);dr.m5(a,3);dr.N0(a,61);dr.m5(a,3);dr.Pe(a,9);return a.join("")};""";
+	public Decryptor (string js_url) {
+		uint8[] data;
+		File.new_for_uri (js_url).load_contents (null, out data, null);
+		var stream = new DataInputStream (new MemoryInputStream.from_data (data));
+		string line = null;
+		while ((line = stream.read_line()) != null) {
+			if (".sig||" in line) {
+				decrypt_method = line.split (".sig||")[2].split ("(")[0];
+				break;
+			}
+		}
+		stream = new DataInputStream (new MemoryInputStream.from_data (data));
+		line = null;
+		string method = null;
+		while ((line = stream.read_line()) != null) {
+			if (line.has_prefix ("var " + decrypt_method)) {
+				js = line.substring (0, line.index_of ("};") + 2);
+				method = line.split (";")[1].split (".")[0];
+				break;
+			}
+		}
+		line = (string)data;
+		line = line.substring (line.index_of ("var " + method));
+		js += line.substring (0, 2 + line.index_of ("};"));
 	}
 	
 	public string decrypt (string signature) {
-		string js = dr + cr + "var signature = cr('%s'); print (signature);".printf (signature);
-		return eval_js (js);
+		var real_js = js + "var signature = %s('%s'); print (signature);".printf (decrypt_method, signature);
+		return eval_js (real_js);
 	}
 	
 	string eval_js (string js) {

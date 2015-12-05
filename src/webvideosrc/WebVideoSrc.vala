@@ -14,8 +14,7 @@ public class WebVideoSrc : Gst.Base.Src {
 				find.suggest (Gst.TypeFindProbability.MAXIMUM, caps.get());
 		}, "html,htm", caps.get()))
 			return false;
-		if (!Gst.Element.register (plugin, "webvideosrc", 1024, web_video_src_real_type()))
-			return false;
+		return Gst.Element.register (plugin, "webvideosrc", 1024, web_video_src_real_type());
 	}
 	
 	class construct {
@@ -52,6 +51,8 @@ public class WebVideoSrc : Gst.Base.Src {
 			started.connect (() => {
 				var list = new Gst.TagList.empty();
 				list.add (Gst.TagMergeMode.APPEND, "title", video.title);
+				if (video.artist != null)
+					list.add (Gst.TagMergeMode.APPEND, "artist", video.artist);
 				var sample = new Gst.Sample (new Gst.Buffer.wrapped (video.picture.data), null, null, null);
 				list.add (Gst.TagMergeMode.APPEND, "image", sample);
 				var msg = new Gst.Message.tag (this, list);

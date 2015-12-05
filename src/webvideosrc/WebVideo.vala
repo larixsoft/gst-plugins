@@ -37,6 +37,7 @@ namespace Video {
 		public ByteArray picture { get; protected set; }
 		public Quality quality { get; set; }
 		public string title { get; protected set; }
+		public string artist { get; protected set; }
 		public string uri { get; private set; }
 		
 		public static bool uri_is_valid (string uri) {

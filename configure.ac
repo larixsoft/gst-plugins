@@ -21,7 +21,6 @@ if test "x$HAVE_GJS" = "xno"; then
 	AC_MSG_ERROR([gjs is required for YouTube])
 fi
 
-PKG_CHECK_MODULES(PLUGINS, gstreamer-base-1.0 json-glib-1.0 gxml-0.6)
-PKG_CHECK_MODULES(SOUP, libsoup-2.4)
+PKG_CHECK_MODULES(PLUGINS, gstreamer-base-1.0 json-glib-1.0 libxml-2.0 gio-2.0 gee-0.8 libsoup-2.4)
 
 AC_OUTPUT
