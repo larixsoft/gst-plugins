@@ -1,11 +1,42 @@
 #include <gst/gst.h>
 #include <gio/gio.h>
 
-#include "webvideosrc.h"
+#include "websrc.h"
 
 #ifndef PACKAGE
-#define PACKAGE "webvideosrc"
+#define PACKAGE "websrc"
 #endif
+
+#define GST_GIO_ERROR_MATCHES(err, code) g_error_matches (err, G_IO_ERROR, G_IO_ERROR_##code)
+
+#define GST_GIO_STREAM_IS_SEEKABLE(stream) (G_IS_SEEKABLE (stream) && g_seekable_can_seek (G_SEEKABLE (stream)))
+
+gboolean
+gst_gio_error (gpointer element, const gchar * func_name, GError ** err,
+    GstFlowReturn * ret)
+{
+  gboolean handled = TRUE;
+
+  if (ret)
+    *ret = GST_FLOW_ERROR;
+
+  if (GST_GIO_ERROR_MATCHES (*err, CANCELLED)) {
+    GST_DEBUG_OBJECT (element, "blocking I/O call cancelled (%s)", func_name);
+    if (ret)
+      *ret = GST_FLOW_FLUSHING;
+  } else if (*err != NULL) {
+    handled = FALSE;
+  } else {
+    GST_ELEMENT_ERROR (element, LIBRARY, FAILED, (NULL),
+        ("%s call failed without error set", func_name));
+  }
+
+  if (handled)
+    g_clear_error (err);
+
+  return handled;
+}
+
 
 GstFlowReturn gst_gio_seek (gpointer element, GSeekable * stream, guint64 offset,
     GCancellable * cancel)
@@ -39,7 +70,109 @@ gboolean web_video_src_set_uri (GstURIHandler * handler, const gchar * uri, GErr
 	return TRUE;
 }
 
-GstFlowReturn web_video_src_rcreate (WebVideoSrc* src, guint64 offset, guint size, GstBuffer ** buf_return)
+gboolean vimeo_src_set_uri (GstURIHandler * handler, const gchar * uri, GError ** error) {
+	GstElement *element = GST_ELEMENT (handler);
+	g_return_val_if_fail (GST_IS_ELEMENT (element), FALSE);
+	if (!vimeo_src_uri_is_valid (uri)) {
+		g_set_error (error, GST_URI_ERROR, GST_URI_ERROR_BAD_URI, "URI not supported");
+		return FALSE;
+	}
+	if (GST_STATE (element) == GST_STATE_PLAYING || GST_STATE (element) == GST_STATE_PAUSED) {
+		g_set_error (error, GST_URI_ERROR, GST_URI_ERROR_BAD_STATE,
+			"Changing the 'location' property while the element is running is not supported");
+		return FALSE;
+	}
+	vimeo_src_set_location ((VimeoSrc*)handler, uri);
+	return TRUE;
+}
+
+gboolean sound_cloud_src_set_uri (GstURIHandler * handler, const gchar * uri, GError ** error) {
+	GstElement *element = GST_ELEMENT (handler);
+	g_return_val_if_fail (GST_IS_ELEMENT (element), FALSE);
+	if (!sound_cloud_src_uri_is_valid (uri)) {
+		g_set_error (error, GST_URI_ERROR, GST_URI_ERROR_BAD_URI, "URI not supported");
+		return FALSE;
+	}
+	if (GST_STATE (element) == GST_STATE_PLAYING || GST_STATE (element) == GST_STATE_PAUSED) {
+		g_set_error (error, GST_URI_ERROR, GST_URI_ERROR_BAD_STATE,
+			"Changing the 'location' property while the element is running is not supported");
+		return FALSE;
+	}
+	sound_cloud_src_set_location ((SoundCloudSrc*)handler, uri);
+	return TRUE;
+}
+
+static void web_video_src_interface_init (gpointer g_iface, gpointer iface_data) {
+	GstURIHandlerInterface * iface = (GstURIHandlerInterface*)g_iface;
+	iface->get_uri = web_video_src_get_uri;
+	iface->set_uri = web_video_src_set_uri;
+	iface->get_protocols = web_video_src_get_protocols;
+	iface->get_type = web_video_src_get_type_uri;
+}
+
+static void vimeo_src_interface_init (gpointer g_iface, gpointer iface_data) {
+	GstURIHandlerInterface * iface = (GstURIHandlerInterface*)g_iface;
+	iface->get_uri = vimeo_src_get_uri;
+	iface->set_uri = vimeo_src_set_uri;
+	iface->get_protocols = vimeo_src_get_protocols;
+	iface->get_type = vimeo_src_get_type_uri;
+}
+
+static void sound_cloud_src_interface_init (gpointer g_iface, gpointer iface_data) {
+	GstURIHandlerInterface * iface = (GstURIHandlerInterface*)g_iface;
+	iface->get_uri = sound_cloud_src_get_uri;
+	iface->set_uri = sound_cloud_src_set_uri;
+	iface->get_protocols = sound_cloud_src_get_protocols;
+	iface->get_type = sound_cloud_src_get_type_uri;
+}
+
+GType web_video_src_real_type (void) {
+	static volatile gsize type_id = 0;
+	if (g_once_init_enter (&type_id)) {
+		static const GInterfaceInfo gst_uri_handler_info = {
+			web_video_src_interface_init,
+			NULL,
+			NULL
+		};
+		GType web_video_src_type_id = web_video_src_get_type();
+		g_type_add_interface_static (web_video_src_type_id, gst_uri_handler_get_type (), &gst_uri_handler_info);
+		g_once_init_leave (&type_id, web_video_src_type_id);
+	}
+	return type_id;
+}
+
+GType vimeo_src_real_type (void) {
+	static volatile gsize type_id = 0;
+	if (g_once_init_enter (&type_id)) {
+		static const GInterfaceInfo gst_uri_handler_info = {
+			vimeo_src_interface_init,
+			NULL,
+			NULL
+		};
+		GType vimeo_src_type_id = vimeo_src_get_type();
+		g_type_add_interface_static (vimeo_src_type_id, gst_uri_handler_get_type (), &gst_uri_handler_info);
+		g_once_init_leave (&type_id, vimeo_src_type_id);
+	}
+	return type_id;
+}
+
+GType sound_cloud_src_real_type (void) {
+	static volatile gsize type_id = 0;
+	if (g_once_init_enter (&type_id)) {
+		static const GInterfaceInfo gst_uri_handler_info = {
+			sound_cloud_src_interface_init,
+			NULL,
+			NULL
+		};
+		GType sound_cloud_src_type_id = sound_cloud_src_get_type();
+		g_type_add_interface_static (sound_cloud_src_type_id, gst_uri_handler_get_type (), &gst_uri_handler_info);
+		g_once_init_leave (&type_id, sound_cloud_src_type_id);
+	}
+	return type_id;
+}
+
+
+GstFlowReturn web_src_rcreate (WebSrc * src, guint64 offset, guint size,GstBuffer ** buf_return)
 {
   GstBuffer *buf;
   GstFlowReturn ret = GST_FLOW_OK;
@@ -111,6 +244,11 @@ GstFlowReturn web_video_src_rcreate (WebVideoSrc* src, guint64 offset, guint siz
         return ret;
     }
 
+    /* GIO sometimes gives less bytes than requested although
+     * it's not at the end of file. SMB for example only
+     * supports reads up to 64k. So we loop here until we get at
+     * at least the requested amount of bytes or a read returns
+     * nothing. */
     mem = gst_allocator_alloc (NULL, cachesize, NULL);
     if (mem == NULL) {
       GST_ERROR_OBJECT (src, "Failed to allocate %u bytes", cachesize);
@@ -133,7 +271,7 @@ GstFlowReturn web_video_src_rcreate (WebVideoSrc* src, guint64 offset, guint siz
     success = (read >= 0);
     eos = (cachesize > 0 && read == 0);
 
-    if (!success) {
+    if (!success && !gst_gio_error (src, "g_input_stream_read", &err, &ret)) {
       GST_ELEMENT_ERROR (src, RESOURCE, READ, (NULL),
           ("Could not read from stream: %s", err->message));
       g_clear_error (&err);
@@ -170,38 +308,14 @@ GstFlowReturn web_video_src_rcreate (WebVideoSrc* src, guint64 offset, guint siz
   return ret;
 }
 
-static void web_video_src_interface_init (gpointer g_iface, gpointer iface_data) {
-	GstURIHandlerInterface * iface = (GstURIHandlerInterface*)g_iface;
-	iface->get_uri = web_video_src_get_uri;
-	iface->set_uri = web_video_src_set_uri;
-	iface->get_protocols = web_video_src_get_protocols;
-	iface->get_type = web_video_src_get_type_uri;
-}
-
-GType web_video_src_real_type (void) {
-	static volatile gsize type_id = 0;
-	if (g_once_init_enter (&type_id)) {
-		static const GInterfaceInfo gst_uri_handler_info = {
-			web_video_src_interface_init,
-			NULL,
-			NULL
-		};
-		GType web_video_src_type_id = web_video_src_get_type();
-		g_type_add_interface_static (web_video_src_type_id, gst_uri_handler_get_type (), &gst_uri_handler_info);
-		g_once_init_leave (&type_id, web_video_src_type_id);
-	}
-	return type_id;
-}
-
 GST_PLUGIN_DEFINE (
     GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
-    webvideosrc,
-    "Web video source element",
-    web_video_src_init,
+    websrc,
+    "Web source elements",
+    web_src_init,
     "1.4",
     "LGPL",
     "MyPlugins",
     "https://github.com/inizan-yannick/gst-plugins"
 )
-

@@ -4,8 +4,6 @@ namespace Video {
 			base();
 			var video_id = url.parameters["v"];
 			uint8[] data;
-			File.new_for_uri ("https://i.ytimg.com/vi/%s/mqdefault.jpg".printf (video_id)).load_contents (null, out data, null);
-			picture = new ByteArray.take (data);
 			File.new_for_uri ("http://www.youtube.com/watch?v=" + video_id).load_contents (null, out data, null);
 			string js_url = null; 
 			string[] parts = ((string)data).split ("\"");
@@ -15,13 +13,15 @@ namespace Video {
 					break;
 				}
 			}
-			var document = new Mxml.HtmlDocument.from_uri ("http://www.youtube.com/watch?v=" + video_id, Mxml.HtmlDocument.default_options);
+			var document = new Html.Document.from_uri ("http://www.youtube.com/watch?v=" + video_id, Html.Document.default_options);
 			title = document.get_elements_by_tag_name ("title")[0].content.strip();
 			if (" - " in title) {
 				artist = title.substring (0, title.index_of (" - "));
 				title = title.substring (3 + title.index_of (" - "));
 				title = title.substring (0, title.last_index_of (" - "));
 			}
+			File.new_for_uri ("https://i.ytimg.com/vi/%s/mqdefault.jpg".printf (video_id)).load_contents (null, out data, null);
+			picture = new ByteArray.take (data);
 			File.new_for_uri ("https://www.youtube.com/get_video_info?sts=1588&asv=3&hl=en&gl=US&el=detailpage&video_id=" + video_id + "&eurl=https%3A%2F%2Fyoutube.googleapis.com%2Fv%2F" + video_id).load_contents (null, out data, null);
 			string _map = ((string)data).split ("url_encoded_fmt_stream_map=")[1].split ("&")[0];
 			_map =  GLib.Uri.unescape_string (_map);

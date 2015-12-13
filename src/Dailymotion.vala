@@ -1,26 +1,10 @@
 namespace Video {
 	public class Dailymotion : WebVideo {
 		public Dailymotion (string uri) {
-			var id = uri.split ("/")[uri.split ("/").length - 1].split ("_")[0];
-			var stream = new DataInputStream (File.new_for_uri ("http://www.dailymotion.com/embed/video/" + id).read());
-			string? line = null;
-			var locator = "('player'), ";
-			while (true) {
-				string l = stream.read_line();
-				if (l == null)
-					break;
-				if (locator in l) {
-					line = l;
-					line = line.substring (line.index_of (locator) + locator.length);
-					line = line.substring (0, line.length - 2);
-					break;
-				}
-			}
-			if (line == null)
-				return;
-			var parser = new Json.Parser();
-			parser.load_from_data (line);
-			var metadata = parser.get_root().get_object().get_object_member ("metadata");
+			this.from_object (dailymotion_object (uri));
+		}
+		
+		public Dailymotion.from_object (Json.Object metadata) {
 			title = metadata.get_string_member ("title");
 			uint8[] data;
 			File.new_for_uri (metadata.get_string_member ("poster_url").replace ("\\/", "/")).load_contents (null, out data, null);

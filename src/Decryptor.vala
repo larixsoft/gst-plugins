@@ -5,7 +5,7 @@ public class Decryptor : GLib.Object {
 	public Decryptor (string js_url) {
 		uint8[] data;
 		File.new_for_uri (js_url).load_contents (null, out data, null);
-		var stream = new DataInputStream (new MemoryInputStream.from_data (data));
+		var stream = new DataInputStream (new MemoryInputStream.from_data (data, null));
 		string line = null;
 		while ((line = stream.read_line()) != null) {
 			if (".sig||" in line) {
@@ -13,7 +13,7 @@ public class Decryptor : GLib.Object {
 				break;
 			}
 		}
-		stream = new DataInputStream (new MemoryInputStream.from_data (data));
+		stream = new DataInputStream (new MemoryInputStream.from_data (data, null));
 		line = null;
 		string method = null;
 		while ((line = stream.read_line()) != null) {
