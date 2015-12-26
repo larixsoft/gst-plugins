@@ -2,7 +2,7 @@ plugindir=$(libdir)/gstreamer-1.0
 plugin_LTLIBRARIES=libgst-youtube.la
 
 libgst_youtube_la_VALASOURCES = Decryptor.vala Uri.vala Utils.vala WebSrc.vala WebVideo.vala \
-	Youtube.vala WebVideoSrc.vala VimeoSrc.vala SoupInputStream.vala SoundCloud.vala Dailymotion.vala
+	Youtube.vala WebVideoSrc.vala VimeoSrc.vala SoupInputStream.vala Dailymotion.vala
 	
 libgst_youtube_la_SOURCES = $(libgst_youtube_la_VALASOURCES:.vala=.c) fix.c
 

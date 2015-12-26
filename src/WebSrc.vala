@@ -1,13 +1,10 @@
 public static extern Gst.FlowReturn web_src_rcreate (WebSrc src, uint64 offset, uint size, out Gst.Buffer buf_return);
 public static extern Type web_video_src_real_type();
 public static extern Type vimeo_src_real_type();
-public static extern Type sound_cloud_src_real_type();
 
 public abstract class WebSrc : Gst.Base.Src {
 	public static bool init (Gst.Plugin plugin) {
 		if (!Gst.Element.register (plugin, "vimeosrc", 1024, vimeo_src_real_type()))
-			return false;
-		if (!Gst.Element.register (plugin, "soundcloudsrc", 1024, sound_cloud_src_real_type()))
 			return false;
 		return Gst.Element.register (plugin, "youtubesrc", 1024, web_video_src_real_type());
 	}

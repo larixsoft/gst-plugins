@@ -53,7 +53,7 @@ public class WebVideoSrc : WebSrc {
 	
 	[CCode (array_length = false, array_null_terminated = true)]
 	public static string[]? get_protocols (GLib.Type gtype) {
-		return new string[]{ "http", "https", "youtube" };
+		return new string[]{ "youtube", "http", "https" };
 	}
 	
 	public static Gst.URIType get_type_uri (GLib.Type gtype) {

@@ -42,8 +42,12 @@ namespace Video {
 		public string uri { get; private set; }
 		
 		public static WebVideo? guess (string location) {
-			if (uri_is_valid_youtube (location))
-				return new Youtube (new MeeGst.Uri (location));
+			if (uri_is_valid_youtube (location)) {
+				var url = new MeeGst.Uri (location);
+				if (location.has_prefix ("youtube://"))
+					url = new MeeGst.Uri ("https://www.youtube.com/watch?v=" + location.split ("/")[2]);
+				return new Youtube (url);
+			}
 			var md = dailymotion_object (location);
 			if (!md.has_member ("error"))
 				return new Dailymotion.from_object (md);
@@ -52,6 +56,8 @@ namespace Video {
 		
 		public static bool uri_is_valid_youtube (string uri) {
 			var url = new MeeGst.Uri (uri);
+			if (uri.has_prefix ("youtube://"))
+				url = new MeeGst.Uri ("https://www.youtube.com/watch?v=" + uri.split ("/")[2]);
 			var video_id = url.parameters["v"];
 			if (video_id == null)
 				return false;
@@ -76,12 +82,14 @@ namespace Video {
 		}
 		
 		public static bool uri_is_valid (string uri) {
+			if (!(uri.has_prefix ("youtube://") || "youtube.com" in uri || "youtu.be" in uri))
+				return false;
 			if (uri_is_valid_youtube (uri))
 				return true;
 			var md = dailymotion_object (uri);
 			if (!md.has_member ("error"))
 				return true;
-			return false;
+			return true;
 		}
 	}
 }

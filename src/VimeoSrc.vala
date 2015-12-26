@@ -67,6 +67,8 @@ public class VimeoSrc : WebSrc {
 	}
 	
 	public static bool uri_is_valid (string uri) {
+		if (!("vimeo" in uri))
+			return false;
 		string[] parts = uri.split ("/");
 		string id = "0";
 		if (parts[2] == "player.vimeo.com")

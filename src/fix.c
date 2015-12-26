@@ -86,22 +86,6 @@ gboolean vimeo_src_set_uri (GstURIHandler * handler, const gchar * uri, GError *
 	return TRUE;
 }
 
-gboolean sound_cloud_src_set_uri (GstURIHandler * handler, const gchar * uri, GError ** error) {
-	GstElement *element = GST_ELEMENT (handler);
-	g_return_val_if_fail (GST_IS_ELEMENT (element), FALSE);
-	if (!sound_cloud_src_uri_is_valid (uri)) {
-		g_set_error (error, GST_URI_ERROR, GST_URI_ERROR_BAD_URI, "URI not supported");
-		return FALSE;
-	}
-	if (GST_STATE (element) == GST_STATE_PLAYING || GST_STATE (element) == GST_STATE_PAUSED) {
-		g_set_error (error, GST_URI_ERROR, GST_URI_ERROR_BAD_STATE,
-			"Changing the 'location' property while the element is running is not supported");
-		return FALSE;
-	}
-	sound_cloud_src_set_location ((SoundCloudSrc*)handler, uri);
-	return TRUE;
-}
-
 static void web_video_src_interface_init (gpointer g_iface, gpointer iface_data) {
 	GstURIHandlerInterface * iface = (GstURIHandlerInterface*)g_iface;
 	iface->get_uri = web_video_src_get_uri;
@@ -116,14 +100,6 @@ static void vimeo_src_interface_init (gpointer g_iface, gpointer iface_data) {
 	iface->set_uri = vimeo_src_set_uri;
 	iface->get_protocols = vimeo_src_get_protocols;
 	iface->get_type = vimeo_src_get_type_uri;
-}
-
-static void sound_cloud_src_interface_init (gpointer g_iface, gpointer iface_data) {
-	GstURIHandlerInterface * iface = (GstURIHandlerInterface*)g_iface;
-	iface->get_uri = sound_cloud_src_get_uri;
-	iface->set_uri = sound_cloud_src_set_uri;
-	iface->get_protocols = sound_cloud_src_get_protocols;
-	iface->get_type = sound_cloud_src_get_type_uri;
 }
 
 GType web_video_src_real_type (void) {
@@ -155,22 +131,6 @@ GType vimeo_src_real_type (void) {
 	}
 	return type_id;
 }
-
-GType sound_cloud_src_real_type (void) {
-	static volatile gsize type_id = 0;
-	if (g_once_init_enter (&type_id)) {
-		static const GInterfaceInfo gst_uri_handler_info = {
-			sound_cloud_src_interface_init,
-			NULL,
-			NULL
-		};
-		GType sound_cloud_src_type_id = sound_cloud_src_get_type();
-		g_type_add_interface_static (sound_cloud_src_type_id, gst_uri_handler_get_type (), &gst_uri_handler_info);
-		g_once_init_leave (&type_id, sound_cloud_src_type_id);
-	}
-	return type_id;
-}
-
 
 GstFlowReturn web_src_rcreate (WebSrc * src, guint64 offset, guint size,GstBuffer ** buf_return)
 {
@@ -314,7 +274,7 @@ GST_PLUGIN_DEFINE (
     websrc,
     "Web source elements",
     web_src_init,
-    "1.4",
+    "1.7.1",
     "LGPL",
     "MyPlugins",
     "https://github.com/inizan-yannick/gst-plugins"
