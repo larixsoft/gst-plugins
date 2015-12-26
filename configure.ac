@@ -1,4 +1,4 @@
-AC_INIT([gst-plugins], [1.1.1], [inizan.yannick@gmail.com], gst-plugins])
+AC_INIT([gst-plugins], [1.7.1], [inizan.yannick@gmail.com], gst-plugins])
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_MACRO_DIR([m4])
