@@ -54,7 +54,7 @@ GstFlowReturn gst_gio_seek (gpointer element, GSeekable * stream, guint64 offset
   return GST_FLOW_ERROR;
 }
 
-gboolean web_video_src_set_uri (GstURIHandler * handler, const gchar * uri, GError ** error) {
+gboolean gst_web_video_src_set_uri (GstURIHandler * handler, const gchar * uri, GError ** error) {
 	GstElement *element = GST_ELEMENT (handler);
 	g_return_val_if_fail (GST_IS_ELEMENT (element), FALSE);
 	if (!video_web_video_uri_is_valid (uri)) {
@@ -66,14 +66,14 @@ gboolean web_video_src_set_uri (GstURIHandler * handler, const gchar * uri, GErr
 			"Changing the 'location' property while the element is running is not supported");
 		return FALSE;
 	}
-	web_video_src_set_location ((WebVideoSrc*)handler, uri);
+	gst_web_video_src_set_location ((GstWebVideoSrc*)handler, uri);
 	return TRUE;
 }
 
-gboolean vimeo_src_set_uri (GstURIHandler * handler, const gchar * uri, GError ** error) {
+gboolean gst_vimeo_src_set_uri (GstURIHandler * handler, const gchar * uri, GError ** error) {
 	GstElement *element = GST_ELEMENT (handler);
 	g_return_val_if_fail (GST_IS_ELEMENT (element), FALSE);
-	if (!vimeo_src_uri_is_valid (uri)) {
+	if (!gst_vimeo_src_uri_is_valid (uri)) {
 		g_set_error (error, GST_URI_ERROR, GST_URI_ERROR_BAD_URI, "URI not supported");
 		return FALSE;
 	}
@@ -82,57 +82,57 @@ gboolean vimeo_src_set_uri (GstURIHandler * handler, const gchar * uri, GError *
 			"Changing the 'location' property while the element is running is not supported");
 		return FALSE;
 	}
-	vimeo_src_set_location ((VimeoSrc*)handler, uri);
+	gst_vimeo_src_set_location ((GstVimeoSrc*)handler, uri);
 	return TRUE;
 }
 
-static void web_video_src_interface_init (gpointer g_iface, gpointer iface_data) {
+static void gst_web_video_src_interface_init (gpointer g_iface, gpointer iface_data) {
 	GstURIHandlerInterface * iface = (GstURIHandlerInterface*)g_iface;
-	iface->get_uri = web_video_src_get_uri;
-	iface->set_uri = web_video_src_set_uri;
-	iface->get_protocols = web_video_src_get_protocols;
-	iface->get_type = web_video_src_get_type_uri;
+	iface->get_uri = gst_web_video_src_get_uri;
+	iface->set_uri = gst_web_video_src_set_uri;
+	iface->get_protocols = gst_web_video_src_get_protocols;
+	iface->get_type = gst_web_video_src_get_type_uri;
 }
 
-static void vimeo_src_interface_init (gpointer g_iface, gpointer iface_data) {
+static void gst_vimeo_src_interface_init (gpointer g_iface, gpointer iface_data) {
 	GstURIHandlerInterface * iface = (GstURIHandlerInterface*)g_iface;
-	iface->get_uri = vimeo_src_get_uri;
-	iface->set_uri = vimeo_src_set_uri;
-	iface->get_protocols = vimeo_src_get_protocols;
-	iface->get_type = vimeo_src_get_type_uri;
+	iface->get_uri = gst_vimeo_src_get_uri;
+	iface->set_uri = gst_vimeo_src_set_uri;
+	iface->get_protocols = gst_vimeo_src_get_protocols;
+	iface->get_type = gst_vimeo_src_get_type_uri;
 }
 
-GType web_video_src_real_type (void) {
+GType gst_web_video_src_real_type (void) {
 	static volatile gsize type_id = 0;
 	if (g_once_init_enter (&type_id)) {
 		static const GInterfaceInfo gst_uri_handler_info = {
-			web_video_src_interface_init,
+			gst_web_video_src_interface_init,
 			NULL,
 			NULL
 		};
-		GType web_video_src_type_id = web_video_src_get_type();
-		g_type_add_interface_static (web_video_src_type_id, gst_uri_handler_get_type (), &gst_uri_handler_info);
-		g_once_init_leave (&type_id, web_video_src_type_id);
+		GType gst_web_video_src_type_id = gst_web_video_src_get_type();
+		g_type_add_interface_static (gst_web_video_src_type_id, gst_uri_handler_get_type (), &gst_uri_handler_info);
+		g_once_init_leave (&type_id, gst_web_video_src_type_id);
 	}
 	return type_id;
 }
 
-GType vimeo_src_real_type (void) {
+GType gst_vimeo_src_real_type (void) {
 	static volatile gsize type_id = 0;
 	if (g_once_init_enter (&type_id)) {
 		static const GInterfaceInfo gst_uri_handler_info = {
-			vimeo_src_interface_init,
+			gst_vimeo_src_interface_init,
 			NULL,
 			NULL
 		};
-		GType vimeo_src_type_id = vimeo_src_get_type();
-		g_type_add_interface_static (vimeo_src_type_id, gst_uri_handler_get_type (), &gst_uri_handler_info);
-		g_once_init_leave (&type_id, vimeo_src_type_id);
+		GType gst_vimeo_src_type_id = gst_vimeo_src_get_type();
+		g_type_add_interface_static (gst_vimeo_src_type_id, gst_uri_handler_get_type (), &gst_uri_handler_info);
+		g_once_init_leave (&type_id, gst_vimeo_src_type_id);
 	}
 	return type_id;
 }
 
-GstFlowReturn web_src_rcreate (WebSrc * src, guint64 offset, guint size,GstBuffer ** buf_return)
+GstFlowReturn web_src_rcreate (GstWebSrc * src, guint64 offset, guint size,GstBuffer ** buf_return)
 {
   GstBuffer *buf;
   GstFlowReturn ret = GST_FLOW_OK;
@@ -273,7 +273,7 @@ GST_PLUGIN_DEFINE (
     GST_VERSION_MINOR,
     websrc,
     "Web source elements",
-    web_src_init,
+    gst_web_src_init,
     "1.7.1",
     "LGPL",
     "MyPlugins",
