@@ -20,13 +20,13 @@ namespace Gst {
 			});
 			started.connect (() => {
 				var list = new Gst.TagList.empty();
+				list.set_scope (Gst.TagScope.GLOBAL);
 				list.add (Gst.TagMergeMode.APPEND, "title", video.title);
 				if (video.artist != null)
 					list.add (Gst.TagMergeMode.APPEND, "artist", video.artist);
 				var sample = new Gst.Sample (new Gst.Buffer.wrapped (video.picture.data), null, null, null);
 				list.add (Gst.TagMergeMode.APPEND, "image", sample);
-				var msg = new Gst.Message.tag (this, list);
-				post_message (msg);
+				send_event (new Gst.Event.tag (list));
 			});
 			notify["quality"].connect (() => {
 				if (video != null) {
