@@ -20,13 +20,14 @@ namespace Gst {
 			position = 0;
 		}
 		
+		public abstract Gst.TagList get_tags();
+		
 		public abstract InputStream get_stream();
 		
 		public signal void started();
 		
 		public override bool start() {
 			stream = get_stream();
-			started();
 			if (stream == null || stream.is_closed())
 				return false;
 			if (stream is Seekable)
@@ -78,7 +79,17 @@ namespace Gst {
 			return true;
 		}
 		
+		bool got_tags;
+		
 		public override Gst.FlowReturn create (uint64 offset, uint size, out Gst.Buffer buffer) {
+			if (!got_tags) {
+				var list = get_tags();
+				if (list != null) {
+					var event = new Gst.Event.tag (list);
+					send_event (event);
+				}
+				got_tags = true;
+			}
 			return web_src_rcreate (this, offset, size, out buffer);
 		}
 		

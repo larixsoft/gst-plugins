@@ -14,6 +14,10 @@ namespace Gst {
 		
 		HashTable<Video.Quality, string> table;
 		
+		string title;
+		string artist;
+		string thumb_url;
+		
 		construct {
 			notify["location"].connect (() => {
 				string[] parts = location.split ("/");
@@ -26,6 +30,9 @@ namespace Gst {
 					id = parts[2];
 				var parser = new Json.Parser();
 				parser.load_from_stream (File.new_for_uri ("http://player.vimeo.com/video/%s/config".printf (id)).read());
+				title = parser.get_root().get_object().get_object_member ("video").get_string_member ("title");
+				thumb_url = parser.get_root().get_object().get_object_member ("video").get_object_member ("thumbs").get_string_member ("640");
+				artist = parser.get_root().get_object().get_object_member ("video").get_object_member ("owner").get_string_member ("name");
 				table = new HashTable<Video.Quality, string>(null, null);
 				parser.get_root().get_object().get_object_member ("request").get_object_member ("files")
 				.get_array_member ("progressive").foreach_element ((array, index, node) => {
@@ -43,6 +50,18 @@ namespace Gst {
 						table[Video.Quality.LOW] = u;
 				});
 			});
+		}
+		
+		public override Gst.TagList get_tags() {
+			var list = new Gst.TagList.empty();
+			list.set_scope (Gst.TagScope.GLOBAL);
+			list.add (Gst.TagMergeMode.APPEND, "title", title);
+			list.add (Gst.TagMergeMode.APPEND, "artist", artist);
+			uint8[] data;
+			File.new_for_uri (thumb_url).load_contents (null, out data, null);
+			var sample = new Gst.Sample (new Gst.Buffer.wrapped (data), null, null, null);
+			list.add (Gst.TagMergeMode.APPEND, "image", sample);
+			return list;
 		}
 		
 		public override InputStream get_stream() {

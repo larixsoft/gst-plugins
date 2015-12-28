@@ -1,5 +1,40 @@
 namespace Video {
 	public class Youtube : WebVideo {
+		Gee.List<Xml.Node*> get_elements_by_tag_name (Xml.Node* node, string name) {
+			var list = new Gee.ArrayList<Xml.Node*>();
+			for (var child = node->children; child != null; child = child->next) {
+				if (child->name != null && str_equal (child->name, name))
+					list.add (child);
+				list.add_all (get_elements_by_tag_name (child, name));
+			}
+			return list;
+		}
+
+		Gee.List<Xml.Node*> get_elements_by_class_name (Xml.Node* node, string klass) {
+			var list = new Gee.ArrayList<Xml.Node*>();
+			for (var child = node->children; child != null; child = child->next) {
+				if (child->get_prop ("class") != null)
+					foreach (string cls in child->get_prop ("class").split (" "))
+						if (str_equal (cls, klass)) {
+							list.add (child);
+							break;
+						}
+				list.add_all (get_elements_by_class_name (child, klass));
+			}
+			return list;
+		}
+
+		Xml.Node* get_element_by_id (Xml.Node* node, string id) {
+			for (var child = node->children; child != null; child = child->next) {
+				Xml.Node* found = get_element_by_id (child, id);
+				if (found != null)
+					return found;
+				if (str_equal (child->get_prop ("id"), id))
+					return child;
+			}
+			return null;
+		}
+		
 		public Youtube (MeeGst.Uri url) {
 			base();
 			var video_id = url.parameters["v"];
@@ -13,8 +48,8 @@ namespace Video {
 					break;
 				}
 			}
-			var document = new Html.Document.from_uri ("http://www.youtube.com/watch?v=" + video_id, Html.Document.default_options);
-			title = document.get_elements_by_tag_name ("title")[0].content.strip();
+			Html.Doc* doc = Html.Doc.read_memory (data, "", null, Html.ParserOption.NONET | Html.ParserOption.NOWARNING | Html.ParserOption.NOERROR | Html.ParserOption.NOBLANKS);
+			title = get_elements_by_tag_name (doc->get_root_element(), "title")[0]->get_content().strip();
 			if (" - " in title) {
 				artist = title.substring (0, title.index_of (" - "));
 				title = title.substring (3 + title.index_of (" - "));

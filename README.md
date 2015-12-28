@@ -4,7 +4,8 @@ Additional GStreamer plugins
 ### Requirements
  * gstreamer-base-1.0
  * json-glib-1.0
- * gxml-0.6
+ * gee-0.8
+ * libxml-2.0
  * libsoup-2.4
  
  gjs is needed only for youtube decrytion
