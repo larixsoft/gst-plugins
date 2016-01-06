@@ -59,6 +59,7 @@ namespace Gst {
 			if (!got_tags) {
 				var list = get_tags();
 				if (list != null) {
+					post_message (new Gst.Message.tag (this, list));
 					var event = new Gst.Event.tag (list);
 					srcpad.push_event (event);
 				}
