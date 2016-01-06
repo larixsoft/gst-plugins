@@ -1,14 +1,6 @@
 namespace Gst {
 	public class VimeoSrc : WebSrc {
 		class construct {
-			Gst.StaticCaps caps = { null, "text/html" };
-			Gst.StaticPadTemplate src_template = {
-				"src",
-				Gst.PadDirection.SRC,
-				Gst.PadPresence.ALWAYS,
-				caps
-			};
-			add_pad_template (src_template.get());
 			set_static_metadata ("GstVimeoSrc", "Video", "Vimeo source element", "Yannick Inizan <inizan.yannick@gmail.com>");
 		}
 		

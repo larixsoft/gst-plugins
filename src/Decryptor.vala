@@ -29,7 +29,7 @@ public class Decryptor : GLib.Object {
 	}
 	
 	public string decrypt (string signature) {
-		var real_js = js + "var signature = %s('%s'); print (signature);".printf (decrypt_method, signature);
+		var real_js = js + "var signature = %s('%s'); console.log (signature);".printf (decrypt_method, signature);
 		return eval_js (real_js);
 	}
 	
@@ -38,7 +38,7 @@ public class Decryptor : GLib.Object {
 		var file = File.new_tmp ("XXXXXX", out stream);
 		stream.output_stream.write (js.data);
 		string output; string err;
-		Process.spawn_command_line_sync ("gjs %s".printf (file.get_path()), out output, out err, null);
+		Process.spawn_command_line_sync ("node %s".printf (file.get_path()), out output, out err, null);
 		return output;
 	}
 }

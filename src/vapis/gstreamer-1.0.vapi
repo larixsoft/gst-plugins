@@ -1545,12 +1545,10 @@ namespace Gst {
 		[CCode (cname = "gst_pad_set_activatemode_function_full")]
 		public void set_activatemode_function (owned Gst.PadActivateModeFunction activatemode);
 		public bool set_active (bool active);
-		[CCode (cname = "gst_pad_set_chain_function_full")]
 		public void set_chain_function (owned Gst.PadChainFunction chain);
 		[CCode (cname = "gst_pad_set_chain_list_function_full")]
 		public void set_chain_list_function (owned Gst.PadChainListFunction chainlist);
 		public void set_element_private (void* priv);
-		[CCode (cname = "gst_pad_set_event_function_full")]
 		public void set_event_function (owned Gst.PadEventFunction event);
 		[CCode (cname = "gst_pad_set_getrange_function_full")]
 		public void set_getrange_function (owned Gst.PadGetRangeFunction @get);

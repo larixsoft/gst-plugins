@@ -29,7 +29,7 @@ namespace Video {
 				Xml.Node* found = get_element_by_id (child, id);
 				if (found != null)
 					return found;
-				if (str_equal (child->get_prop ("id"), id))
+				if (child->get_prop ("id") != null && str_equal (child->get_prop ("id"), id))
 					return child;
 			}
 			return null;
@@ -49,11 +49,18 @@ namespace Video {
 				}
 			}
 			Html.Doc* doc = Html.Doc.read_memory (data, "", null, Html.ParserOption.NONET | Html.ParserOption.NOWARNING | Html.ParserOption.NOERROR | Html.ParserOption.NOBLANKS);
+			/*
 			title = get_elements_by_tag_name (doc->get_root_element(), "title")[0]->get_content().strip();
 			if (" - " in title) {
 				artist = title.substring (0, title.index_of (" - "));
 				title = title.substring (3 + title.index_of (" - "));
 				title = title.substring (0, title.last_index_of (" - "));
+			}
+			*/
+			title = get_element_by_id (doc->get_root_element(), "eow-title")->get_content().strip();
+			if (" - " in title) {
+				artist = title.substring (0, title.index_of (" - "));
+				title = title.substring (3 + title.index_of (" - "));
 			}
 			File.new_for_uri ("https://i.ytimg.com/vi/%s/mqdefault.jpg".printf (video_id)).load_contents (null, out data, null);
 			picture = new ByteArray.take (data);

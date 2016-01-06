@@ -14,12 +14,13 @@ LT_INIT
 AC_PROG_CC
 AM_PROG_VALAC
 
-AC_CHECK_PROG(HAVE_GJS, gjs, yes, no)
+AC_CHECK_PROG(HAVE_NODE, nodejs, yes, no)
 
-if test "x$HAVE_GJS" = "xno"; then
-	AC_MSG_ERROR([gjs is required for YouTube])
+if test "x$HAVE_NODE" = "xno"; then
+	AC_MSG_ERROR([node-js is required for YouTube])
 fi
 
 PKG_CHECK_MODULES(PLUGINS, gstreamer-base-1.0 json-glib-1.0 libxml-2.0 gee-0.8 libsoup-2.4)
+PKG_CHECK_MODULES(VISU, gstreamer-base-1.0 gdk-pixbuf-2.0)
 
 AC_OUTPUT

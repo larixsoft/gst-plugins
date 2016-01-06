@@ -24,7 +24,7 @@ namespace Video {
 			notify["quality"].connect (() => {
 				for (var i = (int)quality; i >= 0; i--) {
 					foreach (var item in urls)
-						if ((int)item.quality == i) {
+						if ((int)item.quality == i && "video%2Fmp4" in item.url) {
 							this.uri = item.url;
 							return;
 						}

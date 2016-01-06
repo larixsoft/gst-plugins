@@ -555,7 +555,7 @@ namespace Gst {
 			public uint get_blocksize ();
 			public Gst.BufferPool get_buffer_pool ();
 			[NoWrapper]
-			public virtual Gst.Caps get_caps (Gst.Caps filter);
+			public virtual Gst.Caps get_caps (Gst.Caps? filter);
 			public bool get_do_timestamp ();
 			[NoWrapper]
 			public virtual bool get_size (out uint64 size);

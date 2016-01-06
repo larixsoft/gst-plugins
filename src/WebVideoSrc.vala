@@ -1,14 +1,6 @@
 namespace Gst {
 	public class WebVideoSrc : WebSrc {
 		class construct {
-			Gst.StaticCaps caps = { null, "text/html" };
-			Gst.StaticPadTemplate src_template = {
-				"src",
-				Gst.PadDirection.SRC,
-				Gst.PadPresence.ALWAYS,
-				caps
-			};
-			add_pad_template (src_template.get());
 			set_static_metadata ("GstWebVideoSrc", "Video", "Web video source element", "Yannick Inizan <inizan.yannick@gmail.com>");
 		}
 		
