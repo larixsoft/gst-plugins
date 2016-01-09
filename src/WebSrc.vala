@@ -10,6 +10,8 @@ namespace Gst {
 		}
 		
 		class construct {
+			Gst.Tags.register ("view-count", Gst.TagFlag.META, typeof (uint), "view-count", "video's number of views", null);
+			
 			Gst.StaticCaps caps = { null, "text/html" };
 			Gst.StaticPadTemplate src_template = {
 				"src",

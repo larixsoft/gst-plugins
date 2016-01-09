@@ -38,6 +38,11 @@ namespace Video {
 		public Quality quality { get; set; }
 		
 		public string artist { get; protected set; }
+		public string comment { get; protected set; }
+		public Gst.DateTime date { get; protected set; }
+		public string copyright { get; protected set; }
+		public string genre { get; protected set; }
+		public uint view_count { get; protected set; }
 		public string title { get; protected set; }
 		public string uri { get; private set; }
 		
@@ -55,6 +60,8 @@ namespace Video {
 		}
 		
 		public static bool uri_is_valid_youtube (string uri) {
+			if (!(uri.has_prefix ("youtube://") || "youtube.com" in uri || "youtu.be" in uri))
+				return false;
 			var url = new MeeGst.Uri (uri);
 			if (uri.has_prefix ("youtube://"))
 				url = new MeeGst.Uri ("https://www.youtube.com/watch?v=" + uri.split ("/")[2]);
@@ -82,8 +89,6 @@ namespace Video {
 		}
 		
 		public static bool uri_is_valid (string uri) {
-			if (!(uri.has_prefix ("youtube://") || "youtube.com" in uri || "youtu.be" in uri))
-				return false;
 			if (uri_is_valid_youtube (uri))
 				return true;
 			var md = dailymotion_object (uri);

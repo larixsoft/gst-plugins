@@ -9,6 +9,7 @@ namespace Gst {
 		string title;
 		string artist;
 		string thumb_url;
+		int64 view;
 		
 		construct {
 			notify["location"].connect (() => {
@@ -22,6 +23,7 @@ namespace Gst {
 					id = parts[2];
 				var parser = new Json.Parser();
 				parser.load_from_stream (File.new_for_uri ("http://player.vimeo.com/video/%s/config".printf (id)).read());
+				view = parser.get_root().get_object().get_int_member ("view");
 				title = parser.get_root().get_object().get_object_member ("video").get_string_member ("title");
 				thumb_url = parser.get_root().get_object().get_object_member ("video").get_object_member ("thumbs").get_string_member ("640");
 				artist = parser.get_root().get_object().get_object_member ("video").get_object_member ("owner").get_string_member ("name");
@@ -49,6 +51,7 @@ namespace Gst {
 			list.set_scope (Gst.TagScope.GLOBAL);
 			list.add (Gst.TagMergeMode.APPEND, "title", title);
 			list.add (Gst.TagMergeMode.APPEND, "artist", artist);
+			list.add (Gst.TagMergeMode.APPEND, "view-count", view);
 			uint8[] data;
 			File.new_for_uri (thumb_url).load_contents (null, out data, null);
 			var sample = new Gst.Sample (new Gst.Buffer.wrapped (data), null, null, null);

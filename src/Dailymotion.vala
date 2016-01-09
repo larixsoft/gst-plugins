@@ -23,7 +23,7 @@ namespace Video {
 					q = Quality.HD2;
 				else return;
 				if (node.get_array().get_length() > 0)
-					urls.add ({ node.get_array().get_object_element (0).get_string_member ("url").replace ("\\/", "/"), q });
+					urls.add ({ node.get_array().get_object_element (0).get_string_member ("url"), q });
 			});
 			quality = Quality.STANDARD;
 		}

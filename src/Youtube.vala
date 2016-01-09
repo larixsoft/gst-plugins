@@ -35,6 +35,19 @@ namespace Video {
 			return null;
 		}
 		
+		string get_real_content (Xml.Node* p) {
+			string s = "";
+			for (var child = p->children; child != null; child = child->next) {
+				if (child->is_text() == 1)
+					s += child->content;
+				else if (child->name == "br")
+					s += "\n";
+				else
+					s += get_real_content (child);
+			}
+			return s;
+		}
+		
 		public Youtube (MeeGst.Uri url) {
 			base();
 			var video_id = url.parameters["v"];
@@ -57,6 +70,18 @@ namespace Video {
 				title = title.substring (0, title.last_index_of (" - "));
 			}
 			*/
+			copyright = get_elements_by_class_name (doc->get_root_element(), "yt-user-info")[0]->get_content().strip();
+			var node = get_element_by_id (doc->get_root_element(), "eow-description"); 
+			comment = get_real_content (node).strip();
+			get_elements_by_tag_name (doc->get_root_element(), "meta").foreach (meta => {
+				if (meta->get_prop ("itemprop") == "datePublished")
+					date = new Gst.DateTime.from_iso8601_string (meta->get_prop ("content"));
+				if (meta->get_prop ("itemprop") == "interactionCount")
+					view_count = (uint)int.parse (meta->get_prop ("content"));
+				if (meta->get_prop ("itemprop") == "genre")
+					genre = meta->get_prop ("content");
+				return true;
+			});
 			title = get_element_by_id (doc->get_root_element(), "eow-title")->get_content().strip();
 			if (" - " in title) {
 				artist = title.substring (0, title.index_of (" - "));

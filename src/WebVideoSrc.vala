@@ -20,9 +20,18 @@ namespace Gst {
 		public override Gst.TagList get_tags() {
 			var list = new Gst.TagList.empty();
 			list.set_scope (Gst.TagScope.GLOBAL);
+			list.add (Gst.TagMergeMode.APPEND, "view-count", video.view_count);
 			list.add (Gst.TagMergeMode.APPEND, "title", video.title);
+			if (video.date != null)
+				list.add (Gst.TagMergeMode.APPEND, "datetime", video.date);
+			if (video.genre != null)
+				list.add (Gst.TagMergeMode.APPEND, "genre", video.genre);
+			if (video.comment != null)
+				list.add (Gst.TagMergeMode.APPEND, "comment", video.comment);
 			if (video.artist != null)
 				list.add (Gst.TagMergeMode.APPEND, "artist", video.artist);
+			if (video.copyright != null)
+				list.add (Gst.TagMergeMode.APPEND, "copyright", video.copyright);
 			var sample = new Gst.Sample (new Gst.Buffer.wrapped (video.picture.data), null, null, null);
 			list.add (Gst.TagMergeMode.APPEND, "image", sample);
 			return list;
