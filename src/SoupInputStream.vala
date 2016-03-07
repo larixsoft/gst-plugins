@@ -79,22 +79,3 @@ class SoupInputStream : GLib.InputStream, GLib.Seekable {
 	
 	public int64 size { get; private set; }
 }
-
-void main (string[] args) {
-	var stream = SoupInputStream.open ("https://fpdl.vimeocdn.com/vimeo-prod-skyfire-std-us/01/4494/5/147472417/447252612.mp4?token=5669a8db_0x939edc17097e3d603bbe7a240a6f9696651f85f4");
-	//var stream = File.new_for_uri ("https://player.vimeo.com/video/147472417/config").read();
-	var output = File.new_for_path ("tmp").create (FileCreateFlags.NONE);
-	uint8[] buffer = new uint8[8192];
-	int i = 0;
-	while (true) {
-		print ("%d\n", i);
-		var res = stream.read (buffer);
-		if (res < 8192) {
-			buffer.resize ((int)res);
-			output.write (buffer);
-			break;
-		}
-		output.write (buffer);
-		i++;
-	}
-}

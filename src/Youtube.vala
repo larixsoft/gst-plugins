@@ -48,8 +48,15 @@ namespace Video {
 			return s;
 		}
 		
+		Gee.ArrayList<Item?> urls;
+		
+		public override Gee.List<Item?> load_urls() {
+			return urls;
+		}
+		
 		public Youtube (MeeGst.Uri url) {
 			base();
+			urls = new Gee.ArrayList<Item?>();
 			var video_id = url.parameters["v"];
 			uint8[] data;
 			File.new_for_uri ("http://www.youtube.com/watch?v=" + video_id).load_contents (null, out data, null);
@@ -126,7 +133,6 @@ namespace Video {
 						q = Quality.LOW;
 					urls.add ({ u + signature, q });
 				}
-				quality = Quality.STANDARD;
 			}
 		}
 	}

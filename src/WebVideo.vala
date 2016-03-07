@@ -19,21 +19,10 @@ namespace Video {
 		public Quality quality;
 	}
 	
-	public class WebVideo : GLib.Object {
-		construct {
-			notify["quality"].connect (() => {
-				for (var i = (int)quality; i >= 0; i--) {
-					foreach (var item in urls)
-						if ((int)item.quality == i) {
-							this.uri = item.url;
-							return;
-						}
-				}
-			});
-			urls = new Gee.ArrayList<Item?>();
-		}
+	public abstract class WebVideo : GLib.Object {
 		
-		internal Gee.ArrayList<Item?> urls { get; private set; }
+		public abstract Gee.List<Item?> load_urls();
+		
 		public ByteArray picture { get; protected set; }
 		public Quality quality { get; set; }
 		
@@ -44,7 +33,19 @@ namespace Video {
 		public string genre { get; protected set; }
 		public uint view_count { get; protected set; }
 		public string title { get; protected set; }
-		public string uri { get; private set; }
+		
+		public string uri {
+			owned get {
+				if (quality == Quality.NONE)
+					quality = Quality.STANDARD;
+				var list = load_urls();
+				for (var i = (int)quality; i >= 0; i--)
+					foreach (var item in list)
+						if ((int)item.quality == i)
+							return item.url;
+				return null;
+			}
+		}
 		
 		public static WebVideo? guess (string location) {
 			if (uri_is_valid_youtube (location)) {
@@ -54,8 +55,10 @@ namespace Video {
 				return new Youtube (url);
 			}
 			var md = dailymotion_object (location);
+			if (md == null)
+				return null;
 			if (!md.has_member ("error"))
-				return new Dailymotion.from_object (md);
+				return new Dailymotion (location);
 			return null;
 		}
 		
@@ -76,7 +79,9 @@ namespace Video {
 			return true;
 		}
 		
-		public static Json.Object dailymotion_object (string uri) {
+		public static Json.Object? dailymotion_object (string uri) {
+			if (!("dailymotion.com/video" in uri) && !("dailymotion.com/embed/" in uri))
+				return null;
 			var id = uri.split ("/")[uri.split ("/").length - 1].split ("_")[0];
 			uint8[] data;
 			File.new_for_uri ("http://www.dailymotion.com/embed/video/" + id).load_contents (null, out data, null);
@@ -92,9 +97,11 @@ namespace Video {
 			if (uri_is_valid_youtube (uri))
 				return true;
 			var md = dailymotion_object (uri);
+			if (md == null)
+				return false;
 			if (!md.has_member ("error"))
 				return true;
-			return true;
+			return false;
 		}
 	}
 }
