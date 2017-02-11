@@ -21,6 +21,5 @@ if test "x$HAVE_NODE" = "xno"; then
 fi
 
 PKG_CHECK_MODULES(PLUGINS, gstreamer-base-1.0 json-glib-1.0 libxml-2.0 gee-0.8 libsoup-2.4)
-PKG_CHECK_MODULES(VISU, gstreamer-base-1.0 gdk-pixbuf-2.0)
 
 AC_OUTPUT

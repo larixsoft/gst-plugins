@@ -64,7 +64,7 @@ namespace Video {
 			string[] parts = ((string)data).split ("\"");
 			for (var i = 0; i < parts.length; i++) {
 				if (parts[i] == "js") {
-					js_url = "http:" + parts[i + 2].replace ("\\/", "/");
+					js_url = parts[i + 2].replace ("\\/", "/");
 					break;
 				}
 			}
@@ -100,7 +100,7 @@ namespace Video {
 			string _map = ((string)data).split ("url_encoded_fmt_stream_map=")[1].split ("&")[0];
 			_map =  GLib.Uri.unescape_string (_map);
 			if (_map != null) {
-				Decryptor dec = new Decryptor (js_url);
+				var dec = new Descrambler (js_url);
 				string[] map = _map.split (",");
 				foreach (string s in map) {
 					string[] t = s.split ("&");
