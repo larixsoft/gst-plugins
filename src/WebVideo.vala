@@ -85,9 +85,9 @@ namespace Video {
 			var id = uri.split ("/")[uri.split ("/").length - 1].split ("_")[0];
 			uint8[] data;
 			File.new_for_uri ("http://www.dailymotion.com/embed/video/" + id).load_contents (null, out data, null);
-			var locator = "('player'), ";
-			string json = ((string)data).substring (((string)data).index_of (locator) + locator.length);
-			json = json.substring (0, json.index_of (");"));
+			string json = (string)data;
+			json = json.split ("var config = ")[1];
+			json = json.substring (0, json.index_of ("};") + 1);
 			var parser = new Json.Parser();
 			parser.load_from_data (json);
 			return parser.get_root().get_object().get_object_member ("metadata");
